@@ -26,6 +26,7 @@ class OverlayState(Enum):
     """Стани оверлею."""
 
     HIDDEN = auto()
+    LOADING = auto()
     RECORDING = auto()
     PROCESSING = auto()
     SUCCESS = auto()
@@ -63,6 +64,10 @@ class RecordingOverlay(QWidget):
         self._error_text = ""
         self._processing_start = 0.0
         self._recording_duration = 0.0
+        self._recording_start = 0.0
+        self._loading_text = ""
+        self._loading_progress = 0.0
+        self._loading_start = 0.0
 
         # Таймер анімації (~60 FPS)
         self._anim_timer = QTimer(self)
@@ -107,6 +112,28 @@ class RecordingOverlay(QWidget):
             self._opacity = opacity
         if show_text is not None:
             self._show_text = show_text
+
+    def show_loading(self, text: str = "Завантаження моделi...") -> None:
+        """Показує оверлей в стані завантаження моделі."""
+        self._state = OverlayState.LOADING
+        self._loading_text = text
+        self._loading_progress = 0.0
+        self._loading_start = time.time()
+        self._pulse_phase = 0.0
+        self._position_on_screen()
+        self.show()
+        self._anim_timer.start()
+
+    def set_loading_progress(self, progress: float, text: str | None = None) -> None:
+        """Оновлює прогрес завантаження (0.0 - 1.0)."""
+        self._loading_progress = max(0.0, min(1.0, progress))
+        if text is not None:
+            self._loading_text = text
+
+    def hide_loading(self) -> None:
+        """Ховає оверлей завантаження."""
+        if self._state == OverlayState.LOADING:
+            self.hide_overlay()
 
     def show_recording(self) -> None:
         """Показує оверлей в стані запису."""
@@ -193,7 +220,9 @@ class RecordingOverlay(QWidget):
         center_x = self.width() / 2
         center_y = self.height() / 2
 
-        if self._state == OverlayState.RECORDING:
+        if self._state == OverlayState.LOADING:
+            self._draw_loading(painter, center_x, center_y)
+        elif self._state == OverlayState.RECORDING:
             self._draw_recording(painter, center_x, center_y)
         elif self._state == OverlayState.PROCESSING:
             self._draw_processing(painter, center_x, center_y)
@@ -203,6 +232,158 @@ class RecordingOverlay(QWidget):
             self._draw_error(painter, center_x, center_y)
 
         painter.end()
+
+    def _draw_loading(self, painter: QPainter, cx: float, cy: float) -> None:
+        """Малює стан завантаження моделі -- пульсуюче коло з прогрес-баром."""
+        radius = self._base_radius * 0.85
+        elapsed = time.time() - self._loading_start
+        progress = self._loading_progress
+
+        # 1. Зовнішнє свічення (синьо-фіолетове, повільне пульсування)
+        pulse = 0.08 + math.sin(self._pulse_phase) * 0.04
+        glow_r = radius * 1.6
+        glow_grad = QRadialGradient(cx, cy, glow_r)
+        gc = QColor(80, 120, 255)
+        gc.setAlphaF(pulse * self._opacity)
+        glow_grad.setColorAt(0.3, gc)
+        glow_grad.setColorAt(1.0, QColor(0, 0, 0, 0))
+        painter.setBrush(QBrush(glow_grad))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(QRectF(cx - glow_r, cy - glow_r, glow_r * 2, glow_r * 2))
+
+        # 2. Основне коло (темне, напівпрозоре)
+        gradient = QRadialGradient(cx - radius * 0.2, cy - radius * 0.2, radius * 1.1)
+        c1 = QColor(40, 60, 120)
+        c1.setAlphaF(0.65 * self._opacity)
+        c2 = QColor(25, 30, 80)
+        c2.setAlphaF(0.55 * self._opacity)
+        gradient.setColorAt(0.0, c1)
+        gradient.setColorAt(1.0, c2)
+        painter.setBrush(QBrush(gradient))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(QRectF(cx - radius, cy - radius, radius * 2, radius * 2))
+
+        # 3. Обертове кільце (повільне, синє)
+        ring_radius = radius * 1.12
+        ring_width = 3.0
+        angle_deg = math.degrees(self._pulse_phase * 1.5) % 360
+        conical = QConicalGradient(cx, cy, angle_deg)
+        c_blue = QColor(80, 160, 255)
+        c_blue.setAlphaF(0.7 * self._opacity)
+        c_purple = QColor(120, 60, 220)
+        c_purple.setAlphaF(0.5 * self._opacity)
+        c_fade = QColor(80, 160, 255)
+        c_fade.setAlphaF(0.0)
+        conical.setColorAt(0.0, c_blue)
+        conical.setColorAt(0.3, c_purple)
+        conical.setColorAt(0.6, c_blue)
+        conical.setColorAt(0.9, c_fade)
+        conical.setColorAt(1.0, c_blue)
+        pen = QPen(QBrush(conical), ring_width)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        painter.setPen(pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawEllipse(
+            QRectF(cx - ring_radius, cy - ring_radius, ring_radius * 2, ring_radius * 2)
+        )
+
+        # 4. Прогрес-бар (горизонтальний, всередині кола)
+        bar_width = radius * 1.2
+        bar_height = 8.0
+        bar_x = cx - bar_width / 2
+        bar_y = cy + 8
+
+        # Фон бару
+        bg_color = QColor(20, 25, 50)
+        bg_color.setAlphaF(0.6 * self._opacity)
+        painter.setBrush(QBrush(bg_color))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawRoundedRect(
+            QRectF(bar_x, bar_y, bar_width, bar_height), bar_height / 2, bar_height / 2
+        )
+
+        # Заповнення бару
+        if progress > 0.01:
+            fill_width = bar_width * progress
+            fill_grad = QRadialGradient(bar_x + fill_width, bar_y + bar_height / 2, fill_width)
+            fc1 = QColor(80, 180, 255)
+            fc1.setAlphaF(0.9 * self._opacity)
+            fc2 = QColor(120, 80, 240)
+            fc2.setAlphaF(0.8 * self._opacity)
+            fill_grad.setColorAt(0.0, fc1)
+            fill_grad.setColorAt(1.0, fc2)
+            painter.setBrush(QBrush(fill_grad))
+            painter.drawRoundedRect(
+                QRectF(bar_x, bar_y, fill_width, bar_height), bar_height / 2, bar_height / 2
+            )
+        else:
+            # Невизначений прогрес -- біжуча смужка
+            stripe_width = bar_width * 0.3
+            stripe_phase = (elapsed * 0.8) % 1.0
+            stripe_x = bar_x + (bar_width - stripe_width) * stripe_phase
+            sc = QColor(80, 180, 255)
+            sc.setAlphaF(0.7 * self._opacity)
+            painter.setBrush(QBrush(sc))
+            painter.drawRoundedRect(
+                QRectF(stripe_x, bar_y, stripe_width, bar_height),
+                bar_height / 2,
+                bar_height / 2,
+            )
+
+        # 5. Іконка завантаження (стрілка вниз) над прогрес-баром
+        arrow_size = radius * 0.2
+        arrow_y = cy - radius * 0.15
+        arrow_color = QColor(160, 210, 255)
+        arrow_color.setAlphaF(0.85 * self._opacity)
+        arrow_pen = QPen(arrow_color, 3)
+        arrow_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        arrow_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+        painter.setPen(arrow_pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        # Вертикальна лінія
+        painter.drawLine(int(cx), int(arrow_y - arrow_size), int(cx), int(arrow_y + arrow_size))
+        # Стрілка
+        painter.drawLine(
+            int(cx - arrow_size * 0.6),
+            int(arrow_y + arrow_size * 0.4),
+            int(cx),
+            int(arrow_y + arrow_size),
+        )
+        painter.drawLine(
+            int(cx + arrow_size * 0.6),
+            int(arrow_y + arrow_size * 0.4),
+            int(cx),
+            int(arrow_y + arrow_size),
+        )
+
+        # 6. Відсоток
+        if progress > 0.01:
+            pct = int(progress * 100)
+            font_pct = QFont("Segoe UI", 11)
+            painter.setFont(font_pct)
+            pct_color = QColor(180, 220, 255)
+            pct_color.setAlphaF(0.85 * self._opacity)
+            painter.setPen(QPen(pct_color))
+            painter.drawText(
+                QRectF(cx - 30, bar_y + bar_height + 4, 60, 20),
+                Qt.AlignmentFlag.AlignCenter,
+                f"{pct}%",
+            )
+
+        # 7. Текст знизу
+        font = QFont("Segoe UI", 11)
+        painter.setFont(font)
+        text_color = QColor(160, 200, 255)
+        text_color.setAlphaF(0.85 * self._opacity)
+        painter.setPen(QPen(text_color))
+        elapsed_sec = int(elapsed)
+        text_y = cy + radius * 1.12 + 30
+        time_str = f" ({elapsed_sec} сек)" if elapsed_sec > 2 else ""
+        painter.drawText(
+            QRectF(0, text_y, self.width(), 30),
+            Qt.AlignmentFlag.AlignCenter,
+            f"{self._loading_text}{time_str}",
+        )
 
     def _draw_recording(self, painter: QPainter, cx: float, cy: float) -> None:
         """Малює стан запису -- футуристичне коло з градієнтами та свіченням."""

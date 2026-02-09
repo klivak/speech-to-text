@@ -8,7 +8,7 @@ from typing import Optional
 
 import numpy as np
 from PyQt6.QtCore import QObject, Qt, QTimer, pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
 
 from src.audio.sounds import SoundManager, ensure_default_sounds
 from src.config import ConfigManager
@@ -79,6 +79,13 @@ class VoiceTypeApp(QObject):
             self._on_transcription_error, Qt.ConnectionType.QueuedConnection
         )
         self._benchmark_done.connect(self._on_benchmark_done, Qt.ConnectionType.QueuedConnection)
+
+        # Таймер перевірки завантаження моделі
+        self._loading_timer = QTimer(self)
+        self._loading_timer.timeout.connect(self._check_model_loading)
+        self._loading_timer.setInterval(500)
+        self._loading_timer.start()
+        self._loading_shown = False
 
         logger.info("VoiceType ініціалізовано. Режим: %s", self._config.get("mode"))
 
@@ -199,6 +206,53 @@ class VoiceTypeApp(QObject):
         self._hotkey_manager.start()
 
     # ---- Запис та розпізнавання ----
+
+    def _check_model_loading(self) -> None:
+        """Перевіряє стан завантаження моделі та показує/ховає оверлей."""
+        if self._config.get("mode") != MODE_LOCAL:
+            if self._loading_shown:
+                self._loading_shown = False
+                if self._overlay:
+                    self._overlay.hide_loading()
+                self._tray.setToolTip(self._tray.toolTip().replace(" [завантаження...]", ""))
+            return
+
+        is_loading = self._local_transcriber.is_loading
+
+        if is_loading and not self._loading_shown:
+            # Почалось завантаження
+            self._loading_shown = True
+            model = self._local_transcriber.model_name
+            if self._overlay:
+                self._overlay.show_loading(f"Завантаження {model}...")
+            self._tray.showMessage(
+                "VoiceType",
+                f"Завантаження моделi {model}...",
+                QSystemTrayIcon.MessageIcon.Information,
+                3000,
+            )
+        elif not is_loading and self._loading_shown:
+            # Завантаження завершилось
+            self._loading_shown = False
+            if self._overlay:
+                self._overlay.hide_loading()
+            error = self._local_transcriber._load_error
+            if error:
+                self._tray.showMessage(
+                    "VoiceType",
+                    f"Помилка завантаження: {error}",
+                    QSystemTrayIcon.MessageIcon.Warning,
+                    5000,
+                )
+            else:
+                model = self._local_transcriber.model_name
+                device = self._local_transcriber.current_device or "cpu"
+                self._tray.showMessage(
+                    "VoiceType",
+                    f"Модель {model} готова ({device.upper()})",
+                    QSystemTrayIcon.MessageIcon.Information,
+                    3000,
+                )
 
     @pyqtSlot()
     def _start_recording(self) -> None:
@@ -607,6 +661,9 @@ class VoiceTypeApp(QObject):
     def _quit(self) -> None:
         """Коректне завершення додатку."""
         logger.info("Завершення роботи VoiceType...")
+
+        # Зупиняємо таймер перевірки завантаження
+        self._loading_timer.stop()
 
         # Зупиняємо запис
         if self._recorder.is_recording:
