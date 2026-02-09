@@ -618,6 +618,14 @@ class SettingsWindow(QDialog):
             self._device_combo.setCurrentIndex(idx)
         self._fp16_check.setChecked(local.get("fp16", False))
 
+        # API ключ -- завантажуємо з Credential Manager
+        from src.utils.secure_key import SecureKeyManager
+
+        if SecureKeyManager.is_configured():
+            key = SecureKeyManager.get_key()
+            if key:
+                self._api_key_input.setText(key)
+
         # Гарячі клавіші
         hotkey = c.get("hotkey", {})
         self._hotkey_input.setText(hotkey.get("record", "ctrl+shift"))
