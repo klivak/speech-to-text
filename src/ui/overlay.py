@@ -234,150 +234,231 @@ class RecordingOverlay(QWidget):
         painter.end()
 
     def _draw_loading(self, painter: QPainter, cx: float, cy: float) -> None:
-        """Малює стан завантаження моделі -- пульсуюче коло з прогрес-баром."""
+        """Малює стан завантаження -- футуристичний голографічний дизайн."""
         radius = self._base_radius * 0.85
         elapsed = time.time() - self._loading_start
         progress = self._loading_progress
+        t = self._pulse_phase
 
-        # 1. Зовнішнє свічення (синьо-фіолетове, повільне пульсування)
-        pulse = 0.08 + math.sin(self._pulse_phase) * 0.04
-        glow_r = radius * 1.6
+        # Динамічні кольори
+        hue = t * 0.1
+        r_a = int(40 + 30 * math.sin(hue))
+        g_a = int(100 + 60 * math.sin(hue * 0.7 + 1.0))
+        b_a = int(220 + 35 * math.sin(hue * 0.5 + 2.0))
+
+        # 1. Зовнішнє свічення -- пульсуюче, з переливами
+        pulse = 0.08 + math.sin(t * 0.5) * 0.04 + math.sin(t * 0.8) * 0.02
+        glow_r = radius * 2.0
         glow_grad = QRadialGradient(cx, cy, glow_r)
-        gc = QColor(80, 120, 255)
+        gc = QColor(r_a, g_a, b_a)
         gc.setAlphaF(pulse * self._opacity)
-        glow_grad.setColorAt(0.3, gc)
+        glow_grad.setColorAt(0.2, gc)
+        gc2 = QColor(100, 40, 200)
+        gc2.setAlphaF(pulse * 0.5 * self._opacity)
+        glow_grad.setColorAt(0.5, gc2)
         glow_grad.setColorAt(1.0, QColor(0, 0, 0, 0))
         painter.setBrush(QBrush(glow_grad))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(QRectF(cx - glow_r, cy - glow_r, glow_r * 2, glow_r * 2))
 
-        # 2. Основне коло (темне, напівпрозоре)
-        gradient = QRadialGradient(cx - radius * 0.2, cy - radius * 0.2, radius * 1.1)
-        c1 = QColor(40, 60, 120)
-        c1.setAlphaF(0.65 * self._opacity)
-        c2 = QColor(25, 30, 80)
-        c2.setAlphaF(0.55 * self._opacity)
+        # 2. Основне коло -- глибокий градієнт з рухомим центром
+        gx = cx + math.sin(t * 0.3) * radius * 0.15
+        gy = cy + math.cos(t * 0.25) * radius * 0.15
+        gradient = QRadialGradient(gx, gy, radius * 1.1)
+        c1 = QColor(30, 50, 110)
+        c1.setAlphaF(0.7 * self._opacity)
+        c2 = QColor(15, 20, 60)
+        c2.setAlphaF(0.6 * self._opacity)
         gradient.setColorAt(0.0, c1)
         gradient.setColorAt(1.0, c2)
         painter.setBrush(QBrush(gradient))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(QRectF(cx - radius, cy - radius, radius * 2, radius * 2))
 
-        # 3. Обертове кільце (повільне, синє)
-        ring_radius = radius * 1.12
-        ring_width = 3.0
-        angle_deg = math.degrees(self._pulse_phase * 1.5) % 360
-        conical = QConicalGradient(cx, cy, angle_deg)
-        c_blue = QColor(80, 160, 255)
-        c_blue.setAlphaF(0.7 * self._opacity)
-        c_purple = QColor(120, 60, 220)
-        c_purple.setAlphaF(0.5 * self._opacity)
-        c_fade = QColor(80, 160, 255)
-        c_fade.setAlphaF(0.0)
-        conical.setColorAt(0.0, c_blue)
-        conical.setColorAt(0.3, c_purple)
-        conical.setColorAt(0.6, c_blue)
-        conical.setColorAt(0.9, c_fade)
-        conical.setColorAt(1.0, c_blue)
-        pen = QPen(QBrush(conical), ring_width)
-        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-        painter.setPen(pen)
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawEllipse(
-            QRectF(cx - ring_radius, cy - ring_radius, ring_radius * 2, ring_radius * 2)
-        )
+        # 3. Подвійне обертове кільце -- два в протилежних напрямках
+        for ring_i, (speed, width, alpha_mult) in enumerate([(1.0, 2.5, 0.7), (-0.6, 1.5, 0.4)]):
+            ring_r = radius * (1.12 + ring_i * 0.08)
+            angle = math.degrees(t * speed) % 360
+            conical = QConicalGradient(cx, cy, angle)
+            ca = QColor(r_a, g_a, b_a)
+            ca.setAlphaF(alpha_mult * self._opacity)
+            cb = QColor(160, 60, 240)
+            cb.setAlphaF(alpha_mult * 0.6 * self._opacity)
+            cf = QColor(r_a, g_a, b_a)
+            cf.setAlphaF(0.0)
+            conical.setColorAt(0.0, ca)
+            conical.setColorAt(0.3, cb)
+            conical.setColorAt(0.6, ca)
+            conical.setColorAt(0.9, cf)
+            conical.setColorAt(1.0, ca)
+            pen = QPen(QBrush(conical), width)
+            pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            painter.setPen(pen)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawEllipse(QRectF(cx - ring_r, cy - ring_r, ring_r * 2, ring_r * 2))
 
-        # 4. Прогрес-бар (горизонтальний, всередині кола)
-        bar_width = radius * 1.2
-        bar_height = 8.0
-        bar_x = cx - bar_width / 2
-        bar_y = cy + 8
+        # 4. Орбітальні точки -- 3 точки що обертаються на різних орбітах
+        for orb_i in range(3):
+            orb_angle = t * (0.8 + orb_i * 0.3) + orb_i * (math.pi * 2 / 3)
+            orb_r = radius * (0.7 + orb_i * 0.15)
+            orb_x = cx + math.cos(orb_angle) * orb_r
+            orb_y = cy + math.sin(orb_angle) * orb_r
+            dot_size = 4.0 + math.sin(t + orb_i) * 1.5
+            dot_color = QColor(
+                int(120 + 80 * math.sin(hue + orb_i * 1.5)),
+                int(180 + 60 * math.sin(hue * 0.7 + orb_i)),
+                255,
+            )
+            dot_color.setAlphaF(0.8 * self._opacity)
+            # Хвіст
+            trail_grad = QRadialGradient(orb_x, orb_y, dot_size * 3)
+            trail_c = QColor(dot_color)
+            trail_c.setAlphaF(0.2 * self._opacity)
+            trail_grad.setColorAt(0.0, trail_c)
+            trail_grad.setColorAt(1.0, QColor(0, 0, 0, 0))
+            painter.setBrush(QBrush(trail_grad))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawEllipse(
+                QRectF(orb_x - dot_size * 3, orb_y - dot_size * 3, dot_size * 6, dot_size * 6)
+            )
+            # Точка
+            painter.setBrush(QBrush(dot_color))
+            painter.drawEllipse(
+                QRectF(orb_x - dot_size / 2, orb_y - dot_size / 2, dot_size, dot_size)
+            )
 
-        # Фон бару
-        bg_color = QColor(20, 25, 50)
-        bg_color.setAlphaF(0.6 * self._opacity)
-        painter.setBrush(QBrush(bg_color))
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawRoundedRect(
-            QRectF(bar_x, bar_y, bar_width, bar_height), bar_height / 2, bar_height / 2
-        )
-
-        # Заповнення бару
+        # 5. Кругова дуга прогресу (якщо є прогрес)
         if progress > 0.01:
-            fill_width = bar_width * progress
-            fill_grad = QRadialGradient(bar_x + fill_width, bar_y + bar_height / 2, fill_width)
-            fc1 = QColor(80, 180, 255)
-            fc1.setAlphaF(0.9 * self._opacity)
-            fc2 = QColor(120, 80, 240)
-            fc2.setAlphaF(0.8 * self._opacity)
-            fill_grad.setColorAt(0.0, fc1)
-            fill_grad.setColorAt(1.0, fc2)
-            painter.setBrush(QBrush(fill_grad))
-            painter.drawRoundedRect(
-                QRectF(bar_x, bar_y, fill_width, bar_height), bar_height / 2, bar_height / 2
+            prog_r = radius * 0.55
+            prog_width = 5.0
+            prog_color = QColor(100, 200, 255)
+            prog_color.setAlphaF(0.85 * self._opacity)
+            prog_pen = QPen(prog_color, prog_width)
+            prog_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            painter.setPen(prog_pen)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            start_angle = 90 * 16
+            span_angle = int(-progress * 360 * 16)
+            painter.drawArc(
+                QRectF(cx - prog_r, cy - prog_r, prog_r * 2, prog_r * 2),
+                start_angle,
+                span_angle,
+            )
+            # Фонова дуга
+            bg_color = QColor(40, 50, 80)
+            bg_color.setAlphaF(0.3 * self._opacity)
+            bg_pen = QPen(bg_color, prog_width)
+            bg_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            painter.setPen(bg_pen)
+            painter.drawArc(
+                QRectF(cx - prog_r, cy - prog_r, prog_r * 2, prog_r * 2),
+                start_angle,
+                -360 * 16,
+            )
+            # Перемалювання прогресу поверх
+            painter.setPen(prog_pen)
+            painter.drawArc(
+                QRectF(cx - prog_r, cy - prog_r, prog_r * 2, prog_r * 2),
+                start_angle,
+                span_angle,
             )
         else:
-            # Невизначений прогрес -- біжуча смужка
-            stripe_width = bar_width * 0.3
-            stripe_phase = (elapsed * 0.8) % 1.0
-            stripe_x = bar_x + (bar_width - stripe_width) * stripe_phase
-            sc = QColor(80, 180, 255)
-            sc.setAlphaF(0.7 * self._opacity)
-            painter.setBrush(QBrush(sc))
-            painter.drawRoundedRect(
-                QRectF(stripe_x, bar_y, stripe_width, bar_height),
-                bar_height / 2,
-                bar_height / 2,
+            # Невизначений прогрес -- сканувальна дуга
+            scan_r = radius * 0.55
+            scan_width = 4.0
+            scan_angle = (elapsed * 120) % 360
+            scan_span = 90
+            scan_color = QColor(80, 180, 255)
+            scan_color.setAlphaF(0.6 * self._opacity)
+            scan_pen = QPen(scan_color, scan_width)
+            scan_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            painter.setPen(scan_pen)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawArc(
+                QRectF(cx - scan_r, cy - scan_r, scan_r * 2, scan_r * 2),
+                int(scan_angle * 16),
+                int(scan_span * 16),
             )
 
-        # 5. Іконка завантаження (стрілка вниз) над прогрес-баром
-        arrow_size = radius * 0.2
-        arrow_y = cy - radius * 0.15
-        arrow_color = QColor(160, 210, 255)
-        arrow_color.setAlphaF(0.85 * self._opacity)
-        arrow_pen = QPen(arrow_color, 3)
-        arrow_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
-        arrow_pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
-        painter.setPen(arrow_pen)
-        painter.setBrush(Qt.BrushStyle.NoBrush)
-        # Вертикальна лінія
-        painter.drawLine(int(cx), int(arrow_y - arrow_size), int(cx), int(arrow_y + arrow_size))
-        # Стрілка
-        painter.drawLine(
-            int(cx - arrow_size * 0.6),
-            int(arrow_y + arrow_size * 0.4),
-            int(cx),
-            int(arrow_y + arrow_size),
-        )
-        painter.drawLine(
-            int(cx + arrow_size * 0.6),
-            int(arrow_y + arrow_size * 0.4),
-            int(cx),
-            int(arrow_y + arrow_size),
-        )
-
-        # 6. Відсоток
+        # 6. Відсоток або іконка в центрі
         if progress > 0.01:
             pct = int(progress * 100)
-            font_pct = QFont("Segoe UI", 11)
+            font_pct = QFont("Segoe UI", 18, QFont.Weight.Light)
             painter.setFont(font_pct)
             pct_color = QColor(180, 220, 255)
-            pct_color.setAlphaF(0.85 * self._opacity)
+            pct_color.setAlphaF(0.9 * self._opacity)
             painter.setPen(QPen(pct_color))
             painter.drawText(
-                QRectF(cx - 30, bar_y + bar_height + 4, 60, 20),
+                QRectF(cx - 40, cy - 15, 80, 30),
                 Qt.AlignmentFlag.AlignCenter,
                 f"{pct}%",
             )
+        else:
+            # Стилізована іконка AI / мозок -- три з'єднані точки
+            node_r = radius * 0.25
+            nodes = [
+                (cx, cy - node_r * 0.6),
+                (cx - node_r * 0.5, cy + node_r * 0.4),
+                (cx + node_r * 0.5, cy + node_r * 0.4),
+            ]
+            # З'єднання
+            line_color = QColor(120, 180, 255)
+            line_color.setAlphaF(0.5 * self._opacity)
+            line_pen = QPen(line_color, 1.5)
+            line_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+            painter.setPen(line_pen)
+            for i_n in range(len(nodes)):
+                for j_n in range(i_n + 1, len(nodes)):
+                    painter.drawLine(
+                        int(nodes[i_n][0]),
+                        int(nodes[i_n][1]),
+                        int(nodes[j_n][0]),
+                        int(nodes[j_n][1]),
+                    )
+            # Точки
+            for nx, ny in nodes:
+                nd_color = QColor(140, 200, 255)
+                nd_color.setAlphaF(0.8 * self._opacity)
+                painter.setBrush(QBrush(nd_color))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawEllipse(QRectF(nx - 3, ny - 3, 6, 6))
 
-        # 7. Текст знизу
+        # 7. Сканувальні лінії (горизонтальні, рухаються)
+        scan_y = cy - radius * 0.7 + ((elapsed * 40) % (radius * 1.4))
+        if abs(scan_y - cy) < radius * 0.95:
+            # Ширина лінії залежить від відстані до центру
+            dist_from_center = abs(scan_y - cy) / radius
+            line_half_w = radius * math.sqrt(max(0, 1.0 - dist_from_center**2)) * 0.9
+            scan_line_color = QColor(80, 160, 255)
+            scan_line_color.setAlphaF(0.15 * self._opacity)
+            scan_pen2 = QPen(scan_line_color, 1.0)
+            painter.setPen(scan_pen2)
+            painter.drawLine(
+                int(cx - line_half_w),
+                int(scan_y),
+                int(cx + line_half_w),
+                int(scan_y),
+            )
+
+        # 8. Скляний блік
+        hl_r = radius * 0.5
+        hl_grad = QRadialGradient(cx - radius * 0.1, cy - radius * 0.3, hl_r)
+        hl_c = QColor(180, 220, 255)
+        hl_c.setAlphaF(0.15 * self._opacity)
+        hl_grad.setColorAt(0.0, hl_c)
+        hl_grad.setColorAt(1.0, QColor(0, 0, 0, 0))
+        painter.setBrush(QBrush(hl_grad))
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(QRectF(cx - hl_r, cy - hl_r - radius * 0.15, hl_r * 2, hl_r * 1.3))
+
+        # 9. Текст знизу
         font = QFont("Segoe UI", 11)
         painter.setFont(font)
         text_color = QColor(160, 200, 255)
         text_color.setAlphaF(0.85 * self._opacity)
         painter.setPen(QPen(text_color))
         elapsed_sec = int(elapsed)
-        text_y = cy + radius * 1.12 + 30
+        text_y = cy + radius * 1.2 + 30
         time_str = f" ({elapsed_sec} сек)" if elapsed_sec > 2 else ""
         painter.drawText(
             QRectF(0, text_y, self.width(), 30),
