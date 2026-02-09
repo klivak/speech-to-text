@@ -6,7 +6,7 @@ import logging
 import threading
 
 import numpy as np
-from PyQt6.QtCore import QObject, Qt, QTimer, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QApplication, QSystemTrayIcon
 
 from src.audio.sounds import SoundManager, ensure_default_sounds
