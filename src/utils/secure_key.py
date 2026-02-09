@@ -22,7 +22,7 @@ class SecureKeyManager:
     Ключ НІКОЛИ не зберігається в config.json або в коді.
     """
 
-    APP_NAME = "VoiceType"
+    APP_NAME = "EchoScribe"
     KEY_NAME = "openai_api_key"
 
     @staticmethod

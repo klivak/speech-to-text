@@ -9,7 +9,7 @@ If you discover a security vulnerability, please report it responsibly:
 
 ## API Key Safety
 
-VoiceType takes API key security seriously:
+EchoScribe takes API key security seriously:
 - API keys are stored in Windows Credential Manager (encrypted by OS)
 - Keys are NEVER stored in config files, logs, or source code
 - All log output automatically masks API key patterns

@@ -29,7 +29,7 @@ format:
 	ruff format src/
 
 build:
-	pyinstaller --onefile --windowed --icon=assets/icon.ico --name=VoiceType --add-data "assets;assets" src/main.py
+	pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe --add-data "assets;assets" src/main.py
 
 clean:
 	rm -rf build/ dist/ *.spec __pycache__ .mypy_cache .ruff_cache htmlcov .coverage

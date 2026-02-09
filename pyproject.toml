@@ -1,5 +1,5 @@
 [project]
-name = "voicetype"
+name = "echoscribe"
 version = "1.0.0"
 description = "Voice-to-text input for Windows powered by OpenAI Whisper"
 readme = "README.md"

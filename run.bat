@@ -1,8 +1,8 @@
 @echo off
-echo Starting VoiceType...
+echo Starting EchoScribe...
 python -m src.main
 if errorlevel 1 (
     echo.
-    echo [ERROR] VoiceType exited with an error.
+    echo [ERROR] EchoScribe exited with an error.
     pause
 )

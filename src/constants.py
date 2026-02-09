@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-APP_NAME = "VoiceType"
+APP_NAME = "EchoScribe"
 APP_VERSION = "1.0.0"
 APP_DESCRIPTION = "Voice-to-text input for Windows powered by OpenAI Whisper"
 

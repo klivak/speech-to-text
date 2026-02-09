@@ -1,4 +1,4 @@
-"""Pytest fixtures для VoiceType."""
+"""Pytest fixtures для EchoScribe."""
 
 from __future__ import annotations
 

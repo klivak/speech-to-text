@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="voicetype",
+    name="echoscribe",
     version="1.0.0",
     description="Voice-to-text input for Windows powered by OpenAI Whisper",
     packages=find_packages(),
@@ -21,7 +21,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "voicetype=src.main:main",
+            "echoscribe=src.main:main",
         ],
     },
 )

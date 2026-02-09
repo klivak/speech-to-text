@@ -1,4 +1,4 @@
-# Contributing to VoiceType
+# Contributing to EchoScribe
 
 ## Quick Start
 1. Fork the repository

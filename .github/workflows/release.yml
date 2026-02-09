@@ -18,9 +18,9 @@ jobs:
           pip install pyinstaller
       - name: Build exe
         run: |
-          pyinstaller --onefile --windowed --icon=assets/icon.ico --name=VoiceType --add-data "assets;assets" src/main.py
+          pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe --add-data "assets;assets" src/main.py
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/VoiceType.exe
+          files: dist/EchoScribe.exe
           generate_release_notes: true

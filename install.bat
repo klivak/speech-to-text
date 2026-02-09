@@ -1,6 +1,6 @@
 @echo off
 echo ============================================
-echo   VoiceType -- Installation
+echo   EchoScribe -- Installation
 echo ============================================
 echo.
 

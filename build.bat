@@ -1,14 +1,14 @@
 @echo off
 echo ============================================
-echo   VoiceType -- Build
+echo   EchoScribe -- Build
 echo ============================================
 echo.
 
 echo Installing PyInstaller...
 pip install pyinstaller >nul 2>&1
 
-echo Building VoiceType.exe...
-pyinstaller --onefile --windowed --icon=assets/icon.ico --name=VoiceType ^
+echo Building EchoScribe.exe...
+pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe ^
     --add-data "assets;assets" ^
     --add-data "src/ui/themes;src/ui/themes" ^
     --hidden-import "whisper" ^
@@ -26,6 +26,6 @@ if errorlevel 1 (
 
 echo.
 echo ============================================
-echo   Build complete: dist\VoiceType.exe
+echo   Build complete: dist\EchoScribe.exe
 echo ============================================
 pause

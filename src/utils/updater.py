@@ -10,7 +10,7 @@ from src.constants import APP_VERSION
 
 logger = logging.getLogger(__name__)
 
-GITHUB_REPO = "your-username/voicetype"
+GITHUB_REPO = "klivak/speech-to-text"
 RELEASES_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 
 

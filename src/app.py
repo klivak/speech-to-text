@@ -1,4 +1,4 @@
-"""Головний клас додатку VoiceType -- координація всіх компонентів."""
+"""Головний клас додатку EchoScribe -- координація всіх компонентів."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ from src.utils.secure_key import SecureKeyManager
 logger = logging.getLogger(__name__)
 
 
-class VoiceTypeApp(QObject):
+class EchoScribeApp(QObject):
     """Головний клас додатку що координує всі компоненти.
 
     Зв'язує UI (трей, оверлей, налаштування) з логікою (запис, розпізнавання,
@@ -82,7 +82,7 @@ class VoiceTypeApp(QObject):
         self._loading_timer.start()
         self._loading_shown = False
 
-        logger.info("VoiceType ініціалізовано. Режим: %s", self._config.get("mode"))
+        logger.info("EchoScribe ініціалізовано. Режим: %s", self._config.get("mode"))
 
     def _init_theme(self) -> None:
         """Ініціалізація теми оформлення."""
@@ -221,7 +221,7 @@ class VoiceTypeApp(QObject):
             if self._overlay:
                 self._overlay.show_loading(f"Завантаження {model}...")
             self._tray.showMessage(
-                "VoiceType",
+                "EchoScribe",
                 f"Завантаження моделi {model}...",
                 QSystemTrayIcon.MessageIcon.Information,
                 3000,
@@ -234,7 +234,7 @@ class VoiceTypeApp(QObject):
             error = self._local_transcriber._load_error
             if error:
                 self._tray.showMessage(
-                    "VoiceType",
+                    "EchoScribe",
                     f"Помилка завантаження: {error}",
                     QSystemTrayIcon.MessageIcon.Warning,
                     5000,
@@ -243,7 +243,7 @@ class VoiceTypeApp(QObject):
                 model = self._local_transcriber.model_name
                 device = self._local_transcriber.current_device or "cpu"
                 self._tray.showMessage(
-                    "VoiceType",
+                    "EchoScribe",
                     f"Модель {model} готова ({device.upper()})",
                     QSystemTrayIcon.MessageIcon.Information,
                     3000,
@@ -655,7 +655,7 @@ class VoiceTypeApp(QObject):
 
     def _quit(self) -> None:
         """Коректне завершення додатку."""
-        logger.info("Завершення роботи VoiceType...")
+        logger.info("Завершення роботи EchoScribe...")
 
         # Зупиняємо таймер перевірки завантаження
         self._loading_timer.stop()

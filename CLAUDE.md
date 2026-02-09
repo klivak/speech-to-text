@@ -1,8 +1,8 @@
-# CLAUDE.md -- VoiceType Project Guide
+# CLAUDE.md -- EchoScribe Project Guide
 
 ## Project Overview
 
-VoiceType -- desktop Windows app for voice-to-text input powered by OpenAI Whisper.
+EchoScribe -- desktop Windows app for voice-to-text input powered by OpenAI Whisper.
 Hold a hotkey, speak, release -- text is pasted into any active window.
 
 ## Tech Stack
@@ -20,7 +20,7 @@ Hold a hotkey, speak, release -- text is pasted into any active window.
 ```
 src/
   main.py          -- entry point
-  app.py           -- main coordinator (VoiceTypeApp), connects all components
+  app.py           -- main coordinator (EchoScribeApp), connects all components
   config.py        -- JSON config manager with dot-notation (config.get("local.model"))
   constants.py     -- all defaults, dictionaries, punctuation commands
   core/            -- business logic (recorder, transcribers, text processing, history)
@@ -53,7 +53,7 @@ ruff check --fix src/
 ruff format src/
 
 # Build exe
-pyinstaller --onefile --windowed --icon=assets/icon.ico --name=VoiceType --add-data "assets;assets" src/main.py
+pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe --add-data "assets;assets" src/main.py
 ```
 
 ## Key Architecture Decisions

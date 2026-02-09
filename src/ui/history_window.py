@@ -42,7 +42,7 @@ class HistoryWindow(QDialog):
         super().__init__(parent)
         self._entries = entries
 
-        self.setWindowTitle("VoiceType -- Iсторiя розпiзнавань")
+        self.setWindowTitle("EchoScribe -- Iсторiя розпiзнавань")
         self.setMinimumSize(700, 500)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
 
@@ -190,7 +190,7 @@ class HistoryWindow(QDialog):
     def _export(self) -> None:
         """Експортує історію в TXT файл."""
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "Експорт iсторiї", "voicetype_history.txt", "Text (*.txt)"
+            self, "Експорт iсторiї", "echoscribe_history.txt", "Text (*.txt)"
         )
         if file_path:
             self.export_requested.emit(file_path)

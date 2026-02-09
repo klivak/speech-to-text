@@ -1,11 +1,11 @@
-# VoiceType
+# EchoScribe
 
 **Голосовий ввід тексту для Windows на базі OpenAI Whisper**
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)]()
-[![CI](https://github.com/your-username/voicetype/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/voicetype/actions)
+[![CI](https://github.com/klivak/speech-to-text/actions/workflows/ci.yml/badge.svg)](https://github.com/klivak/speech-to-text/actions)
 
 > Тримай гарячу клавішу, говори, відпусти -- текст миттєво вставляється в будь-яку програму.
 
@@ -62,8 +62,8 @@
 
 ```bash
 # Клонувати
-git clone https://github.com/your-username/voicetype.git
-cd voicetype
+git clone https://github.com/klivak/speech-to-text.git
+cd speech-to-text
 
 # Встановити залежності
 pip install -r requirements.txt
@@ -199,7 +199,7 @@ ruff format --check src/
 mypy src/ --ignore-missing-imports
 
 # Збірка exe
-pyinstaller --onefile --windowed --icon=assets/icon.ico --name=VoiceType --add-data "assets;assets" src/main.py
+pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe --add-data "assets;assets" src/main.py
 ```
 
 ## Дорожня карта
@@ -234,7 +234,7 @@ pyinstaller --onefile --windowed --icon=assets/icon.ico --name=VoiceType --add-d
 ### Інтеграції
 - [ ] VS Code розширення
 - [ ] Obsidian плагін для голосових нотаток
-- [ ] CLI: `voicetype --file audio.mp3 --output text.txt`
+- [ ] CLI: `echoscribe --file audio.mp3 --output text.txt`
 - [ ] Telegram бот -- голосове повідомлення в текст
 - [ ] REST API сервер для локальної мережі
 

@@ -61,7 +61,7 @@ class SettingsWindow(QDialog):
         super().__init__(parent)
         self._config = config
 
-        self.setWindowTitle("VoiceType -- Налаштування")
+        self.setWindowTitle("EchoScribe -- Налаштування")
         self.setMinimumSize(650, 520)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
 

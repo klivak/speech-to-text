@@ -1,4 +1,4 @@
-"""Точка входу додатку VoiceType."""
+"""Точка входу додатку EchoScribe."""
 
 from __future__ import annotations
 
@@ -9,7 +9,12 @@ from dotenv import load_dotenv
 
 
 def main() -> None:
-    """Запуск додатку VoiceType."""
+    """Запуск додатку EchoScribe."""
+    # Встановлюємо AppUserModelID для коректного відображення назви в Windows
+    import ctypes
+
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.echoscribe.app")  # type: ignore[attr-defined]
+
     # Завантажуємо змінні оточення
     load_dotenv()
 
@@ -23,7 +28,7 @@ def main() -> None:
     import logging
 
     logger = logging.getLogger(__name__)
-    logger.info("Запуск VoiceType...")
+    logger.info("Запуск EchoScribe...")
 
     # Перевіряємо PyQt6
     try:
@@ -34,15 +39,15 @@ def main() -> None:
 
     # Створюємо QApplication
     app = QApplication(sys.argv)
-    app.setApplicationName("VoiceType")
+    app.setApplicationName("EchoScribe")
     app.setQuitOnLastWindowClosed(False)  # Залишаємо працювати в треї
 
     # Запускаємо головний клас
-    from src.app import VoiceTypeApp
+    from src.app import EchoScribeApp
 
-    voice_app = VoiceTypeApp(app)  # noqa: F841  -- prevent GC
+    voice_app = EchoScribeApp(app)  # noqa: F841  -- prevent GC
 
-    logger.info("VoiceType готовий до роботи.")
+    logger.info("EchoScribe готовий до роботи.")
 
     # Запускаємо event loop
     sys.exit(app.exec())

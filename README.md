@@ -1,4 +1,4 @@
-# VoiceType
+# EchoScribe
 
 **Voice-to-text input for Windows powered by OpenAI Whisper**
 
@@ -62,8 +62,8 @@ Time from releasing the hotkey to text insertion (for a ~5 second phrase):
 
 ```bash
 # Clone
-git clone https://github.com/your-username/voicetype.git
-cd voicetype
+git clone https://github.com/klivak/speech-to-text.git
+cd speech-to-text
 
 # Install dependencies
 pip install -r requirements.txt
@@ -201,7 +201,7 @@ ruff format --check src/
 mypy src/ --ignore-missing-imports
 
 # Build exe
-pyinstaller --onefile --windowed --icon=assets/icon.ico --name=VoiceType --add-data "assets;assets" src/main.py
+pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe --add-data "assets;assets" src/main.py
 ```
 
 ## Roadmap
@@ -236,7 +236,7 @@ pyinstaller --onefile --windowed --icon=assets/icon.ico --name=VoiceType --add-d
 ### Integrations
 - [ ] VS Code extension
 - [ ] Obsidian plugin for voice notes
-- [ ] CLI: `voicetype --file audio.mp3 --output text.txt`
+- [ ] CLI: `echoscribe --file audio.mp3 --output text.txt`
 - [ ] Telegram bot -- voice message to text
 - [ ] REST API server for local network
 
