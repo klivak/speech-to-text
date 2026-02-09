@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import threading
 from typing import Callable
 
 import keyboard
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
 from src.constants import DEFAULT_HOTKEY, HOTKEY_MODE_PUSH, HOTKEY_MODE_TOGGLE
 
 logger = logging.getLogger(__name__)
+
+# Затримка перед початком запису (мс), щоб уникнути конфлiкту
+# з комбiнацiями типу ctrl+shift+x
+_PUSH_DELAY_MS = 200
 
 
 class HotkeyManager(QObject):
@@ -49,6 +54,10 @@ class HotkeyManager(QObject):
         self._is_active = False
         self._lock = threading.Lock()
         self._hooks: list[Callable] = []
+        self._pending_start = False
+        self._extra_key_pressed = False
+        self._all_keys_hook: Callable | None = None
+        self._delay_timer: QTimer | None = None
 
     @property
     def is_recording(self) -> bool:
@@ -196,14 +205,63 @@ class HotkeyManager(QObject):
         return True
 
     def _on_push_press(self, event: keyboard.KeyboardEvent) -> None:
-        """Обробник натискання в режимі push-to-talk."""
+        """Обробник натискання в режимі push-to-talk.
+
+        Використовує затримку щоб не конфлiктувати з комбiнацiями
+        типу ctrl+shift+x. Якщо пiсля натискання тригера протягом
+        _PUSH_DELAY_MS натиснута iнша клавiша -- запис скасовується.
+        """
         with self._lock:
-            if not self._is_recording and self._check_modifiers():
+            if self._is_recording or not self._check_modifiers():
+                return
+            self._pending_start = True
+            self._extra_key_pressed = False
+
+        # Слiдкуємо за iншими клавiшами пiд час затримки
+        modifiers, trigger_key = self._parse_hotkey_parts()
+        ignore_keys = set(modifiers + [trigger_key])
+
+        def _on_any_key(e: keyboard.KeyboardEvent) -> None:
+            if e.event_type == "down" and e.name and e.name.lower() not in ignore_keys:
+                self._extra_key_pressed = True
+
+        self._all_keys_hook = keyboard.hook(_on_any_key)
+
+        # Запуск таймера затримки в основному потоцi (Qt)
+        self._delay_timer = QTimer()
+        self._delay_timer.setSingleShot(True)
+        self._delay_timer.timeout.connect(self._on_delay_finished)
+        self._delay_timer.start(_PUSH_DELAY_MS)
+
+    def _on_delay_finished(self) -> None:
+        """Викликається пiсля затримки -- починає запис якщо не було iнших клавiш."""
+        # Знiмаємо хук на всi клавiшi
+        if self._all_keys_hook is not None:
+            with contextlib.suppress(ValueError, KeyError):
+                keyboard.unhook(self._all_keys_hook)
+            self._all_keys_hook = None
+
+        with self._lock:
+            if self._pending_start and not self._extra_key_pressed:
                 self._is_recording = True
+                self._pending_start = False
                 self.recording_start.emit()
+            else:
+                self._pending_start = False
 
     def _on_push_release(self, event: keyboard.KeyboardEvent) -> None:
         """Обробник відпускання в режимі push-to-talk."""
+        # Скасувати очiкування якщо вiдпустили до закiнчення затримки
+        if self._pending_start:
+            self._pending_start = False
+            if self._delay_timer is not None:
+                self._delay_timer.stop()
+            if self._all_keys_hook is not None:
+                with contextlib.suppress(ValueError, KeyError):
+                    keyboard.unhook(self._all_keys_hook)
+                self._all_keys_hook = None
+            return
+
         with self._lock:
             if self._is_recording:
                 self._is_recording = False
