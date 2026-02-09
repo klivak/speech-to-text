@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import QApplication, QSystemTrayIcon
 from src.audio.sounds import SoundManager, ensure_default_sounds
 from src.config import ConfigManager
 from src.constants import (
+    APP_VERSION,
     DEVICE_AUTO,
     LANG_EN,
     LANG_UK,
@@ -175,6 +176,7 @@ class EchoScribeApp(QObject):
         self._tray.toggle_enabled.connect(self._toggle_enabled)
         self._tray.language_changed.connect(self._on_language_changed)
         self._tray.device_changed.connect(self._on_device_changed)
+        self._tray.check_updates_requested.connect(self._on_check_updates)
         self._tray.quit_requested.connect(self._quit)
         self._tray.show()
 
@@ -650,6 +652,37 @@ class EchoScribeApp(QObject):
         """Обробляє результат бенчмарку (головний потік)."""
         if self._settings_window:
             self._settings_window.set_benchmark_result(result)
+
+    # ---- Updates ----
+
+    def _on_check_updates(self) -> None:
+        """Перевіряє наявність оновлень на GitHub."""
+        from src.utils.updater import check_for_updates
+
+        result = check_for_updates()
+        if result:
+            import webbrowser
+
+            from PyQt6.QtWidgets import QMessageBox
+
+            reply = QMessageBox.information(
+                None,
+                "Доступне оновлення",
+                f"Нова версiя: {result['version']} (поточна: {result['current']})\n\n"
+                f"Вiдкрити сторiнку завантаження?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                webbrowser.open(result["url"])
+        else:
+            from PyQt6.QtWidgets import QMessageBox
+
+            QMessageBox.information(
+                None,
+                "Оновлення",
+                f"Ви використовуєте найновiшу версiю ({APP_VERSION}).",
+                QMessageBox.StandardButton.Ok,
+            )
 
     # ---- Lifecycle ----
 

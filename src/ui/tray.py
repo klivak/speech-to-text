@@ -188,7 +188,7 @@ class SystemTray(QSystemTrayIcon):
         self._menu.addAction(update_action)
 
         about_action = QAction(f"Про {APP_NAME} v{APP_VERSION}", self._menu)
-        about_action.setEnabled(False)
+        about_action.triggered.connect(self._show_about)
         self._menu.addAction(about_action)
 
         self._menu.addSeparator()
@@ -265,3 +265,28 @@ class SystemTray(QSystemTrayIcon):
         self._gpu_action.setChecked(device == "cuda")
         self._update_tooltip()
         self.device_changed.emit(device)
+
+    def _show_about(self) -> None:
+        """Показує діалог 'Про програму'."""
+        from PyQt6.QtWidgets import QMessageBox
+
+        msg = QMessageBox()
+        msg.setWindowTitle(f"Про {APP_NAME}")
+        msg.setIcon(QMessageBox.Icon.Information)
+        msg.setText(
+            f"<h3>{APP_NAME} v{APP_VERSION}</h3>"
+            f"<p>Голосовий ввiд тексту для Windows на базi OpenAI Whisper.</p>"
+            f"<p>Тримай гарячу клавiшу, говори, вiдпусти -- текст миттєво "
+            f"вставляється в будь-яку програму.</p>"
+            f"<p><b>Безпека:</b> API ключi зберiгаються в Windows Credential Manager. "
+            f"Данi нiкуди не вiдправляються (крiм OpenAI API в режимi API). "
+            f"Аудiо та текст обробляються локально.</p>"
+            f'<p><a href="https://github.com/klivak/speech-to-text">GitHub</a></p>'
+        )
+        msg.setTextFormat(Qt.TextFormat.RichText)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+        # Іконка вікна
+        msg.setWindowIcon(_create_colored_icon(QColor(124, 110, 240)))
+
+        msg.exec()

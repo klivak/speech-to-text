@@ -213,6 +213,22 @@ class SettingsWindow(QDialog):
         link_btn.clicked.connect(lambda: webbrowser.open("https://platform.openai.com/api-keys"))
         layout.addWidget(link_btn)
 
+        # Безпека
+        security_group = QGroupBox("Безпека та конфiденцiйнiсть")
+        security_layout = QVBoxLayout(security_group)
+        security_info = QLabel(
+            "-- API ключ зберiгається виключно в Windows Credential Manager (шифрування ОС)\n"
+            "-- Ключ НIКОЛИ не зберiгається в config.json, логах або кодi\n"
+            "-- В локальному режимi данi нiкуди не вiдправляються\n"
+            "-- В режимi API аудiо надсилається тiльки на OpenAI для розпiзнавання\n"
+            "-- Iсторiя зберiгається тiльки локально на вашому ПК\n"
+            "-- Логи автоматично маскують будь-якi API ключi"
+        )
+        security_info.setWordWrap(True)
+        security_info.setProperty("class", "secondary")
+        security_layout.addWidget(security_info)
+        layout.addWidget(security_group)
+
         layout.addStretch()
         return tab
 
