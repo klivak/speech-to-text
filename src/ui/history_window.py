@@ -46,6 +46,13 @@ class HistoryWindow(QDialog):
         self.setMinimumSize(700, 500)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
 
+        # Іконка вікна
+        from PyQt6.QtGui import QColor
+
+        from src.ui.tray import _create_colored_icon
+
+        self.setWindowIcon(_create_colored_icon(QColor(124, 110, 240)))
+
         self._setup_ui()
         self._load_entries()
 

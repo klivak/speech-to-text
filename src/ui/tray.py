@@ -23,30 +23,59 @@ def _get_assets_dir() -> Path:
 
 
 def _create_colored_icon(color: QColor, size: int = 64) -> QIcon:
-    """Створює кольорову іконку програмно."""
+    """Створює стилізовану іконку EchoScribe з пером та звуковими хвилями."""
+    from PyQt6.QtCore import QPointF
+    from PyQt6.QtGui import QLinearGradient, QPainterPath, QPen
+
     pixmap = QPixmap(size, size)
     pixmap.fill(Qt.GlobalColor.transparent)
 
     painter = QPainter(pixmap)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-    painter.setBrush(QBrush(color))
-    painter.setPen(Qt.PenStyle.NoPen)
 
-    # Коло
-    margin = 4
+    # Фонове коло з градієнтом
+    margin = 2
+    gradient = QLinearGradient(QPointF(0, 0), QPointF(size, size))
+    gradient.setColorAt(0, color)
+    gradient.setColorAt(1, color.darker(130))
+    painter.setBrush(QBrush(gradient))
+    painter.setPen(Qt.PenStyle.NoPen)
     painter.drawEllipse(QRect(margin, margin, size - margin * 2, size - margin * 2))
 
-    # Спрощена іконка мікрофона
-    painter.setBrush(QBrush(QColor(255, 255, 255)))
-    mic_w = size // 6
-    mic_h = size // 3
-    cx = size // 2
-    cy = size // 2
-    painter.drawRoundedRect(
-        QRect(cx - mic_w, cy - mic_h + 4, mic_w * 2, mic_h),
-        mic_w,
-        mic_w,
-    )
+    # Перо (scribe) -- стилізоване
+    pen_color = QColor(255, 255, 255)
+    painter.setPen(QPen(pen_color, size * 0.04, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+    painter.setBrush(QBrush(pen_color))
+
+    cx = size * 0.38
+    cy = size * 0.55
+    pen_path = QPainterPath()
+    pen_path.moveTo(cx - size * 0.08, cy + size * 0.18)
+    pen_path.lineTo(cx + size * 0.12, cy - size * 0.22)
+    pen_path.lineTo(cx + size * 0.16, cy - size * 0.18)
+    pen_path.lineTo(cx - size * 0.04, cy + size * 0.22)
+    pen_path.closeSubpath()
+    painter.drawPath(pen_path)
+
+    # Звукові хвилі (echo) -- 3 дуги справа
+    wave_color = QColor(255, 255, 255, 200)
+    wave_cx = size * 0.6
+    wave_cy = size * 0.45
+
+    for i, radius in enumerate([size * 0.1, size * 0.17, size * 0.24]):
+        alpha = 200 - i * 50
+        wave_color.setAlpha(alpha)
+        painter.setPen(
+            QPen(wave_color, size * 0.035, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+        )
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        arc_rect = QRect(
+            int(wave_cx - radius),
+            int(wave_cy - radius),
+            int(radius * 2),
+            int(radius * 2),
+        )
+        painter.drawArc(arc_rect, -45 * 16, 90 * 16)
 
     painter.end()
     return QIcon(pixmap)

@@ -65,6 +65,13 @@ class SettingsWindow(QDialog):
         self.setMinimumSize(650, 520)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
 
+        # Іконка вікна
+        from PyQt6.QtGui import QColor
+
+        from src.ui.tray import _create_colored_icon
+
+        self.setWindowIcon(_create_colored_icon(QColor(124, 110, 240)))
+
         self._setup_ui()
         self._load_config()
 
@@ -221,12 +228,16 @@ class SettingsWindow(QDialog):
         self._model_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  # type: ignore[union-attr]
         self._model_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self._model_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self._model_table.setMinimumHeight(180)
+
+        from src.utils.model_manager import is_model_downloaded
 
         for i, (name, info) in enumerate(WHISPER_MODELS.items()):
             self._model_table.setItem(i, 0, QTableWidgetItem(name))
             self._model_table.setItem(i, 1, QTableWidgetItem(f"{info['size_mb']} MB"))
             self._model_table.setItem(i, 2, QTableWidgetItem(info["description"]))  # type: ignore[call-overload]
-            self._model_table.setItem(i, 3, QTableWidgetItem("--"))
+            status = "Завантажено" if is_model_downloaded(name) else "Не завантажено"
+            self._model_table.setItem(i, 3, QTableWidgetItem(status))
 
         layout.addWidget(self._model_table)
 

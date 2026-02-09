@@ -13,7 +13,7 @@ def main() -> None:
     # Встановлюємо AppUserModelID для коректного відображення назви в Windows
     import ctypes
 
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("com.echoscribe.app")  # type: ignore[attr-defined]
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("EchoScribe")  # type: ignore[attr-defined]
 
     # Завантажуємо змінні оточення
     load_dotenv()
