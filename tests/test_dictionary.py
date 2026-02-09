@@ -22,14 +22,15 @@ class TestDictionaryManager:
         assert dm.dictionary.get("flutter") == "Flutter"
 
     def test_loads_existing_dictionary(self, dictionary_path: str) -> None:
-        """Завантажує існуючий словник."""
+        """Завантажує існуючий словник та мерджить дефолти."""
         custom = {"myword": "MyWord"}
         with open(dictionary_path, "w") as f:
             json.dump(custom, f)
 
         dm = DictionaryManager(dictionary_path)
         assert dm.dictionary.get("myword") == "MyWord"
-        assert "flutter" not in dm.dictionary
+        # Дефолтні записи автоматично додаються
+        assert dm.dictionary.get("flutter") == "Flutter"
 
     def test_add_word(self, dictionary_path: str) -> None:
         """Додає слово до словника."""
@@ -115,3 +116,16 @@ class TestDictionaryManager:
         dm = DictionaryManager(dictionary_path)
         dm.add_word("MyWord", "MyWord")
         assert "myword" in dm.dictionary
+
+    def test_auto_merge_preserves_user_entries(self, dictionary_path: str) -> None:
+        """Авто-мерж не перезаписує користувацькі значення."""
+        custom = {"flutter": "MyCustomFlutter", "myterm": "MyTerm"}
+        with open(dictionary_path, "w") as f:
+            json.dump(custom, f)
+
+        dm = DictionaryManager(dictionary_path)
+        # Користувацьке значення збережено
+        assert dm.dictionary["flutter"] == "MyCustomFlutter"
+        # Нові дефолтні записи додані
+        assert dm.dictionary.get("myterm") == "MyTerm"
+        assert "dart" in dm.dictionary

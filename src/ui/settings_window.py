@@ -260,9 +260,36 @@ class SettingsWindow(QDialog):
         layout.addWidget(device_group)
 
         # Benchmark
-        bench_btn = QPushButton("Benchmark -- тест швидкостi")
+        bench_group = QGroupBox("Benchmark -- тест швидкостi")
+        bench_layout = QVBoxLayout(bench_group)
+
+        bench_info = QLabel(
+            "Тест обробляє 5 секунд тестового аудiо та показує швидкiсть.\n"
+            "RTF (Real-Time Factor) -- скiльки секунд аудiо обробляється за 1 секунду.\n"
+            "RTF > 1.0 = швидше за реальний час, RTF < 1.0 = повiльнiше."
+        )
+        bench_info.setWordWrap(True)
+        bench_info.setProperty("class", "secondary")
+        bench_layout.addWidget(bench_info)
+
+        bench_btn = QPushButton("Запустити benchmark")
         bench_btn.clicked.connect(self.benchmark_requested.emit)
-        layout.addWidget(bench_btn)
+        bench_layout.addWidget(bench_btn)
+
+        self._bench_result_label = QLabel("")
+        self._bench_result_label.setWordWrap(True)
+        self._bench_result_label.setStyleSheet("font-size: 13px; padding: 6px;")
+        bench_layout.addWidget(self._bench_result_label)
+
+        # Таблиця порівняння (заповнюється ззовні)
+        self._bench_table = QTableWidget(0, 3)
+        self._bench_table.setHorizontalHeaderLabels(["Пристрiй", "Час обробки", "RTF"])
+        self._bench_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self._bench_table.setMaximumHeight(120)
+        self._bench_table.setVisible(False)
+        bench_layout.addWidget(self._bench_table)
+
+        layout.addWidget(bench_group)
 
         return tab
 
@@ -827,6 +854,42 @@ class SettingsWindow(QDialog):
                 if spoken and written:
                     result[spoken] = written
         return result
+
+    def set_benchmark_result(self, result: dict) -> None:
+        """Показує результат бенчмарку."""
+        if "error" in result:
+            self._bench_result_label.setText(f"Помилка: {result['error']}")
+            self._bench_result_label.setStyleSheet("font-size: 13px; padding: 6px; color: red;")
+            return
+
+        device = result.get("device", "?")
+        model = result.get("model", "?")
+        proc_time = result.get("processing_time", 0)
+        rtf = result.get("realtime_factor", 0)
+        audio_dur = result.get("audio_duration", 5)
+
+        if rtf >= 1.0:
+            speed_text = f"Швидше за реальний час ({rtf:.1f}x)"
+            color = "#4CAF50"
+        else:
+            speed_text = f"Повiльнiше за реальний час ({rtf:.1f}x)"
+            color = "#FF9800"
+
+        self._bench_result_label.setText(
+            f"Модель: {model} | Пристрiй: {device.upper()}\n"
+            f"{audio_dur:.0f} сек аудiо оброблено за {proc_time:.1f} сек\n"
+            f"{speed_text}"
+        )
+        self._bench_result_label.setStyleSheet(f"font-size: 13px; padding: 6px; color: {color};")
+
+        # Додаємо рядок до таблиці порівняння
+        self._bench_table.setVisible(True)
+        row = self._bench_table.rowCount()
+        self._bench_table.insertRow(row)
+        self._bench_table.setItem(row, 0, QTableWidgetItem(f"{device.upper()} ({model})"))
+        self._bench_table.setItem(row, 1, QTableWidgetItem(f"{proc_time:.1f} сек"))
+        rtf_item = QTableWidgetItem(f"{rtf:.2f}x")
+        self._bench_table.setItem(row, 2, rtf_item)
 
     def get_api_key(self) -> str:
         """Повертає введений API ключ."""

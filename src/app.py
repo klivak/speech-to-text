@@ -51,6 +51,7 @@ class VoiceTypeApp(QObject):
     # Внутрішні сигнали для передачі результатів з потоків
     _transcription_done = pyqtSignal(object)
     _transcription_error = pyqtSignal(str)
+    _benchmark_done = pyqtSignal(dict)
 
     def __init__(self, qt_app: QApplication) -> None:
         super().__init__()
@@ -77,6 +78,7 @@ class VoiceTypeApp(QObject):
         self._transcription_error.connect(
             self._on_transcription_error, Qt.ConnectionType.QueuedConnection
         )
+        self._benchmark_done.connect(self._on_benchmark_done, Qt.ConnectionType.QueuedConnection)
 
         logger.info("VoiceType ініціалізовано. Режим: %s", self._config.get("mode"))
 
@@ -388,6 +390,7 @@ class VoiceTypeApp(QObject):
         self._settings_window.api_key_test_requested.connect(self._test_api_key)
         self._settings_window.overlay_preview_requested.connect(self._preview_overlay)
         self._settings_window.model_download_requested.connect(self._download_model)
+        self._settings_window.benchmark_requested.connect(self._run_benchmark)
 
         # Заповнюємо дані
         self._settings_window.load_dictionary(self._dictionary.dictionary)
@@ -570,6 +573,34 @@ class VoiceTypeApp(QObject):
 
         thread = threading.Thread(target=_do_download, daemon=True)
         thread.start()
+
+    def _run_benchmark(self) -> None:
+        """Запускає бенчмарк транскрайбера у фоновому потоці."""
+        if self._local_transcriber.is_loading:
+            if self._settings_window:
+                self._settings_window.set_benchmark_result(
+                    {"error": "Модель ще завантажується, зачекайте..."}
+                )
+            return
+
+        def _do_benchmark() -> None:
+            result = self._local_transcriber.benchmark(duration_sec=5.0)
+            self._benchmark_done.emit(result)
+
+        thread = threading.Thread(target=_do_benchmark, daemon=True)
+        thread.start()
+
+        if self._settings_window:
+            self._settings_window._bench_result_label.setText("Виконується benchmark...")
+            self._settings_window._bench_result_label.setStyleSheet(
+                "font-size: 13px; padding: 6px; color: #2196F3;"
+            )
+
+    @pyqtSlot(dict)
+    def _on_benchmark_done(self, result: dict) -> None:
+        """Обробляє результат бенчмарку (головний потік)."""
+        if self._settings_window:
+            self._settings_window.set_benchmark_result(result)
 
     # ---- Lifecycle ----
 

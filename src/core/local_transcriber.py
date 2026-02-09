@@ -100,9 +100,14 @@ class LocalTranscriber(BaseTranscriber):
         self.set_device(self._current_device or "auto")
 
     def transcribe(self, audio: np.ndarray, language: str = "uk") -> TranscriptionResult:
-        """Розпізнає мовлення через локальний Whisper."""
+        """Розпізнає мовлення через локальний Whisper.
+
+        Якщо language="auto", Whisper автоматично визначає мову.
+        """
         start_time = time.time()
         duration = len(audio) / SAMPLE_RATE
+        # language=None для Whisper означає auto-detect
+        whisper_lang = None if language == "auto" else language
 
         with self._lock:
             if self._model is None:
@@ -122,25 +127,27 @@ class LocalTranscriber(BaseTranscriber):
 
                 result = self._model.transcribe(
                     audio_float,
-                    language=language,
+                    language=whisper_lang,
                     fp16=self._fp16 and self._current_device == "cuda",
                     task="transcribe",
                 )
 
                 text = result.get("text", "").strip()
+                detected_lang = result.get("language", language)
                 processing_time = time.time() - start_time
 
                 logger.info(
-                    "Розпізнано за %.1f сек (%s, %s): %s",
+                    "Розпізнано за %.1f сек (%s, %s, мова: %s): %s",
                     processing_time,
                     self._model_name,
                     self._current_device,
+                    detected_lang,
                     text[:80],
                 )
 
                 return TranscriptionResult(
                     text=text,
-                    language=language,
+                    language=detected_lang,
                     duration=duration,
                     processing_time=processing_time,
                     mode="local",
@@ -188,3 +195,48 @@ class LocalTranscriber(BaseTranscriber):
         while self._loading and (time.time() - start) < timeout:
             time.sleep(0.1)
         return self._model is not None
+
+    def benchmark(self, duration_sec: float = 5.0) -> dict[str, float | str]:
+        """Запускає бенчмарк: транскрибує тестове аудіо і повертає результати.
+
+        Повертає dict з ключами: device, model, audio_duration, processing_time,
+        realtime_factor (скільки секунд аудіо на 1 секунду обробки).
+        """
+        with self._lock:
+            if self._model is None:
+                return {"error": "Модель не завантажена"}
+
+            # Генеруємо тестове аудіо (тиша з невеликим шумом)
+            samples = int(SAMPLE_RATE * duration_sec)
+            test_audio = np.random.randn(samples).astype(np.float32) * 0.01
+
+            start_time = time.time()
+            try:
+                self._model.transcribe(
+                    test_audio,
+                    language="uk",
+                    fp16=self._fp16 and self._current_device == "cuda",
+                    task="transcribe",
+                )
+            except Exception as e:
+                return {"error": str(e)}
+            processing_time = time.time() - start_time
+
+            realtime_factor = duration_sec / processing_time if processing_time > 0 else 0
+
+            logger.info(
+                "Benchmark: %.1f сек аудіо за %.1f сек (%s, %s). RTF: %.2fx",
+                duration_sec,
+                processing_time,
+                self._model_name,
+                self._current_device,
+                realtime_factor,
+            )
+
+            return {
+                "device": self._current_device or "unknown",
+                "model": self._model_name,
+                "audio_duration": duration_sec,
+                "processing_time": round(processing_time, 2),
+                "realtime_factor": round(realtime_factor, 2),
+            }

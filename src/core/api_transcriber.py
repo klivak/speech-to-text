@@ -48,11 +48,15 @@ class APITranscriber(BaseTranscriber):
             # Конвертуємо numpy масив в WAV для API
             wav_buffer = self._audio_to_wav(audio)
 
-            result = client.audio.transcriptions.create(
-                model=self._model,
-                file=("audio.wav", wav_buffer, "audio/wav"),
-                language=language,
-            )
+            # language=None для auto-detect
+            api_kwargs: dict = {
+                "model": self._model,
+                "file": ("audio.wav", wav_buffer, "audio/wav"),
+            }
+            if language != "auto":
+                api_kwargs["language"] = language
+
+            result = client.audio.transcriptions.create(**api_kwargs)
 
             text = result.text.strip()
             processing_time = time.time() - start_time

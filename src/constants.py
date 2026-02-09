@@ -13,7 +13,9 @@ MODE_API = "api"
 # Мови
 LANG_UK = "uk"
 LANG_EN = "en"
+LANG_AUTO = "auto"
 SUPPORTED_LANGUAGES = {
+    LANG_AUTO: "Автовизначення",
     LANG_UK: "Українська",
     LANG_EN: "English",
 }
