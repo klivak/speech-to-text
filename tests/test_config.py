@@ -15,7 +15,7 @@ class TestConfigManager:
         """Створює дефолтну конфігурацію якщо файл не існує."""
         config = ConfigManager(config_path)
         assert Path(config_path).exists()
-        assert config.get("mode") == "local"
+        assert config.get("mode") == "api"
         assert config.get("language") == "uk"
 
     def test_loads_existing_config(self, config_path: str) -> None:
@@ -73,7 +73,7 @@ class TestConfigManager:
         config.set("language", "en")
 
         config.reset()
-        assert config.get("mode") == "local"
+        assert config.get("mode") == "api"
         assert config.get("language") == "uk"
 
     def test_merges_missing_defaults(self, config_path: str) -> None:
@@ -96,4 +96,4 @@ class TestConfigManager:
 
         config = ConfigManager(config_path)
         # Має використати дефолтні
-        assert config.get("mode") == "local"
+        assert config.get("mode") == "api"

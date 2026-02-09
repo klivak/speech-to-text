@@ -239,8 +239,8 @@ class SettingsWindow(QDialog):
         layout = QVBoxLayout(tab)
 
         # Таблиця моделей
-        self._model_table = QTableWidget(len(WHISPER_MODELS), 4)
-        self._model_table.setHorizontalHeaderLabels(["Модель", "Розмiр", "Опис", "Статус"])
+        self._model_table = QTableWidget(len(WHISPER_MODELS), 5)
+        self._model_table.setHorizontalHeaderLabels(["Модель", "Розмiр", "RAM", "Опис", "Статус"])
         self._model_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  # type: ignore[union-attr]
         self._model_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self._model_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
@@ -251,9 +251,12 @@ class SettingsWindow(QDialog):
         for i, (name, info) in enumerate(WHISPER_MODELS.items()):
             self._model_table.setItem(i, 0, QTableWidgetItem(name))
             self._model_table.setItem(i, 1, QTableWidgetItem(f"{info['size_mb']} MB"))
-            self._model_table.setItem(i, 2, QTableWidgetItem(info["description"]))  # type: ignore[call-overload]
+            ram = info.get("ram_mb", 0)
+            ram_text = f"~{ram / 1000:.1f} GB" if ram >= 1000 else f"~{ram} MB"
+            self._model_table.setItem(i, 2, QTableWidgetItem(ram_text))
+            self._model_table.setItem(i, 3, QTableWidgetItem(info["description"]))  # type: ignore[call-overload]
             status = "Завантажено" if is_model_downloaded(name) else "Не завантажено"
-            self._model_table.setItem(i, 3, QTableWidgetItem(status))
+            self._model_table.setItem(i, 4, QTableWidgetItem(status))
 
         layout.addWidget(self._model_table)
 
@@ -851,7 +854,7 @@ class SettingsWindow(QDialog):
             item = self._model_table.item(i, 0)
             if item and item.text() == model:
                 status = "Завантажено" if downloaded else "Потрiбно завантажити"
-                self._model_table.setItem(i, 3, QTableWidgetItem(status))
+                self._model_table.setItem(i, 4, QTableWidgetItem(status))
                 break
 
     def update_stats(

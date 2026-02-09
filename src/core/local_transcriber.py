@@ -24,6 +24,7 @@ class LocalTranscriber(BaseTranscriber):
         model_name: str = DEFAULT_MODEL,
         device: str = "auto",
         fp16: bool = False,
+        lazy: bool = False,
     ) -> None:
         self._model_name = model_name
         self._model: Any = None
@@ -32,9 +33,11 @@ class LocalTranscriber(BaseTranscriber):
         self._lock = threading.Lock()
         self._loading = False
         self._load_error: str | None = None
+        self._target_device = device
 
-        # Ініціалізуємо модель
-        self.set_device(device)
+        # Завантажуємо модель одразу тiльки якщо не lazy
+        if not lazy:
+            self.set_device(device)
 
     @property
     def model_name(self) -> str:

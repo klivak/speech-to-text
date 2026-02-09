@@ -22,11 +22,11 @@ SUPPORTED_LANGUAGES = {
 
 # Моделі Whisper
 WHISPER_MODELS = {
-    "tiny": {"size_mb": 75, "description": "Найшвидша, низька точність"},
-    "base": {"size_mb": 150, "description": "Швидка, прийнятна точність"},
-    "small": {"size_mb": 500, "description": "Збалансована (рекомендовано)"},
-    "medium": {"size_mb": 1500, "description": "Повільніша, висока точність"},
-    "large-v3": {"size_mb": 3000, "description": "Найточніша, потребує GPU"},
+    "tiny": {"size_mb": 75, "ram_mb": 400, "description": "Найшвидша, низька точність"},
+    "base": {"size_mb": 150, "ram_mb": 600, "description": "Швидка, прийнятна точність"},
+    "small": {"size_mb": 500, "ram_mb": 1500, "description": "Збалансована (рекомендовано)"},
+    "medium": {"size_mb": 1500, "ram_mb": 4000, "description": "Повільніша, висока точність"},
+    "large-v3": {"size_mb": 3000, "ram_mb": 9000, "description": "Найточніша, потребує GPU"},
 }
 DEFAULT_MODEL = "small"
 
@@ -72,7 +72,7 @@ API_MODEL = "whisper-1"
 # Дефолтний конфіг
 DEFAULT_CONFIG = {
     "version": APP_VERSION,
-    "mode": MODE_LOCAL,
+    "mode": MODE_API,
     "language": LANG_UK,
     "local": {
         "model": DEFAULT_MODEL,

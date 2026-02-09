@@ -93,10 +93,12 @@ class EchoScribeApp(QObject):
     def _init_transcribers(self) -> None:
         """Ініціалізація транскрайберів."""
         local_cfg = self._config.get_section("local")
+        mode = self._config.get("mode", "api")
         self._local_transcriber = LocalTranscriber(
             model_name=local_cfg.get("model", "small"),
             device=local_cfg.get("device", DEVICE_AUTO),
             fp16=local_cfg.get("fp16", False),
+            lazy=(mode != "local"),
         )
         self._api_transcriber = APITranscriber(
             timeout=self._config.get("api.timeout", 30),
@@ -574,6 +576,10 @@ class EchoScribeApp(QObject):
         if "device" in local_cfg:
             self._local_transcriber.set_device(local_cfg["device"])
             self._tray.update_state(device=local_cfg["device"])
+        # Якщо переключили на local i модель ще не завантажена -- завантажити
+        if settings.get("mode") == "local" and self._local_transcriber._model is None:
+            device = local_cfg.get("device") or self._local_transcriber._target_device
+            self._local_transcriber.set_device(device)
         if "fp16" in local_cfg:
             self._local_transcriber._fp16 = local_cfg["fp16"]
 
