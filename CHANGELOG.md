@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.3.0] - 2026-02-09
+
+### Changed
+- Modern Python type hints (`X | None` instead of `Optional[X]`) across all modules
+- Cleaned up unused imports throughout codebase
+- Fixed GitHub CI badge link in README to point to correct repository
+
+## [1.2.0] - 2026-02-09
+
+### Added
+- Model loading progress overlay with real-time percentage display
+- Tray notifications for model download/load start and completion
+
+## [1.1.0] - 2026-02-09
+
+### Added
+- Multilingual auto-detect mode for speech recognition
+- Benchmark tool in settings to test transcription speed across models
+- Futuristic UI theme updates
+- Clipboard behavior settings (configurable paste method)
+- Expanded default dictionary with more dev terms
+
+### Fixed
+- Various bug fixes for UI and clipboard handling
+
 ## [1.0.0] - 2026-02-09
 
 ### Added
