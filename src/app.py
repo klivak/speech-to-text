@@ -93,6 +93,7 @@ class EchoScribeApp(QObject):
     def _init_transcribers(self) -> None:
         """Ініціалізація транскрайберів."""
         local_cfg = self._config.get_section("local")
+        api_cfg = self._config.get_section("api")
         mode = self._config.get("mode", "api")
         self._local_transcriber = LocalTranscriber(
             model_name=local_cfg.get("model", "small"),
@@ -101,7 +102,8 @@ class EchoScribeApp(QObject):
             lazy=(mode != "local"),
         )
         self._api_transcriber = APITranscriber(
-            timeout=self._config.get("api.timeout", 30),
+            provider=api_cfg.get("provider", "openai"),
+            timeout=api_cfg.get("timeout", 30),
         )
 
     def _init_audio(self) -> None:
@@ -529,17 +531,19 @@ class EchoScribeApp(QObject):
             self._dictionary.reset_to_defaults()
             return
 
-        # Зберігаємо API ключ окремо
+        # Зберігаємо API ключ для обраного провайдера
         if self._settings_window:
+            provider = self._settings_window.get_api_provider()
             api_key = self._settings_window.get_api_key()
             logger.info(
-                "Збереження налаштувань: API ключ з поля вводу (довжина: %d).",
+                "Збереження налаштувань: провайдер=%s, ключ (довжина: %d).",
+                provider,
                 len(api_key) if api_key else 0,
             )
             if api_key:
-                SecureKeyManager.save_key(api_key)
+                SecureKeyManager.save_key(api_key, provider)
                 settings.setdefault("api", {})["api_key_configured"] = True
-            elif not SecureKeyManager.is_configured():
+            elif not SecureKeyManager.is_configured(provider):
                 settings.setdefault("api", {})["api_key_configured"] = False
 
             # Зберігаємо словник
@@ -572,6 +576,11 @@ class EchoScribeApp(QObject):
         # Режим
         if "mode" in settings:
             self._tray.update_state(mode=settings["mode"])
+
+        # API провайдер
+        api_cfg = settings.get("api", {})
+        if "provider" in api_cfg:
+            self._api_transcriber.provider = api_cfg["provider"]
 
         # Локальний транскрайбер
         local_cfg = settings.get("local", {})
@@ -658,11 +667,16 @@ class EchoScribeApp(QObject):
     def _test_api_key(self) -> None:
         """Тестує API ключ."""
         if self._settings_window:
+            provider = self._settings_window.get_api_provider()
             key = self._settings_window.get_api_key()
             if key:
-                SecureKeyManager.save_key(key)
+                SecureKeyManager.save_key(key, provider)
 
+            # Тимчасово встановлюємо провайдер для тесту
+            old_provider = self._api_transcriber.provider
+            self._api_transcriber.provider = provider
             success, message = self._api_transcriber.test_connection()
+            self._api_transcriber.provider = old_provider
             self._settings_window.set_api_key_status(success, message)
 
     def _preview_overlay(self) -> None:

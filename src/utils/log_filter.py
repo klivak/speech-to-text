@@ -5,8 +5,8 @@ from __future__ import annotations
 import logging
 import re
 
-# Патерн для OpenAI API ключів
-_API_KEY_PATTERN = re.compile(r"sk-[A-Za-z0-9_-]{20,}")
+# Патерни для API ключiв рiзних провайдерiв
+_API_KEY_PATTERN = re.compile(r"(sk-|gsk_)[A-Za-z0-9_-]{20,}")
 
 
 def mask_api_key(text: str) -> str:
@@ -14,7 +14,8 @@ def mask_api_key(text: str) -> str:
 
     def _replace(match: re.Match) -> str:
         key = match.group(0)
-        return f"sk-...{key[-4:]}"
+        prefix = match.group(1)
+        return f"{prefix}...{key[-4:]}"
 
     return _API_KEY_PATTERN.sub(_replace, text)
 

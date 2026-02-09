@@ -50,3 +50,19 @@ class TestLogFilter:
         result = mask_api_key(text)
         assert "proj-abc" not in result
         assert "sk-..." in result
+
+    def test_masks_groq_key(self) -> None:
+        """Маскує Groq API ключ."""
+        text = "Using key gsk_abcdefghijklmnopqrstuvwxyz1234"
+        result = mask_api_key(text)
+        assert "gsk_abcdef" not in result
+        assert "gsk_..." in result
+
+    def test_masks_mixed_keys(self) -> None:
+        """Маскує ключi рiзних провайдерiв."""
+        text = "openai=sk-aaaaaaaaaaaaaaaaaaaaaa groq=gsk_bbbbbbbbbbbbbbbbbbbbbb"
+        result = mask_api_key(text)
+        assert "sk-aaa" not in result
+        assert "gsk_bbb" not in result
+        assert "sk-..." in result
+        assert "gsk_..." in result

@@ -34,6 +34,7 @@ class TestConfigManager:
         assert config.get("local.model") == "small"
         assert config.get("local.device") == "auto"
         assert config.get("hotkey.record") == "ctrl+shift"
+        assert config.get("api.provider") == "openai"
 
     def test_dot_notation_set(self, config_path: str) -> None:
         """Встановлення значення через крапкову нотацію."""

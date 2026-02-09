@@ -69,6 +69,41 @@ MAX_HISTORY_ITEMS = 1000
 API_TIMEOUT = 30
 API_MODEL = "whisper-1"
 
+# API провайдери
+API_PROVIDER_OPENAI = "openai"
+API_PROVIDER_GROQ = "groq"
+API_PROVIDER_DEEPGRAM = "deepgram"
+
+API_PROVIDERS: dict[str, dict[str, object]] = {
+    API_PROVIDER_OPENAI: {
+        "name": "OpenAI",
+        "model": "whisper-1",
+        "base_url": None,
+        "key_prefix": "sk-",
+        "key_placeholder": "sk-...",
+        "console_url": "https://platform.openai.com/api-keys",
+        "coming_soon": False,
+    },
+    API_PROVIDER_GROQ: {
+        "name": "Groq (безкоштовно)",
+        "model": "whisper-large-v3-turbo",
+        "base_url": "https://api.groq.com/openai/v1",
+        "key_prefix": "gsk_",
+        "key_placeholder": "gsk_...",
+        "console_url": "https://console.groq.com/keys",
+        "coming_soon": True,
+    },
+    API_PROVIDER_DEEPGRAM: {
+        "name": "Deepgram",
+        "model": "nova-2",
+        "base_url": "https://api.deepgram.com/v1",
+        "key_prefix": "",
+        "key_placeholder": "API ключ...",
+        "console_url": "https://console.deepgram.com/",
+        "coming_soon": True,
+    },
+}
+
 # Дефолтний конфіг
 DEFAULT_CONFIG = {
     "version": APP_VERSION,
@@ -80,6 +115,7 @@ DEFAULT_CONFIG = {
         "fp16": False,
     },
     "api": {
+        "provider": API_PROVIDER_OPENAI,
         "api_key_configured": False,
         "model": API_MODEL,
         "timeout": API_TIMEOUT,

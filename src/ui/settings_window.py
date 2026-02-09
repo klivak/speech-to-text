@@ -31,6 +31,7 @@ from PyQt6.QtWidgets import (
 )
 
 from src.constants import (
+    API_PROVIDERS,
     FLOAT_BUTTON_SIZES,
     OVERLAY_SIZES,
     SUPPORTED_LANGUAGES,
@@ -168,12 +169,36 @@ class SettingsWindow(QDialog):
         tab = QWidget()
         layout = QVBoxLayout(tab)
 
+        # Вибiр провайдера
+        provider_form = QFormLayout()
+        self._provider_combo = QComboBox()
+        for prov_key, prov_info in API_PROVIDERS.items():
+            name = str(prov_info["name"])
+            if prov_info.get("coming_soon"):
+                name += " (скоро)"
+            self._provider_combo.addItem(name, prov_key)
+        self._provider_combo.currentIndexChanged.connect(self._on_provider_changed)
+        provider_form.addRow("API провайдер:", self._provider_combo)
+        layout.addLayout(provider_form)
+
+        # Мiтка "скоро"
+        self._coming_soon_label = QLabel("Пiдтримка цього провайдера зʼявиться найближчим часом.")
+        self._coming_soon_label.setWordWrap(True)
+        self._coming_soon_label.setStyleSheet("color: #FF9800; padding: 8px; font-size: 13px;")
+        self._coming_soon_label.setVisible(False)
+        layout.addWidget(self._coming_soon_label)
+
+        # Контейнер для налаштувань ключа (ховається для coming_soon)
+        self._api_key_widget = QWidget()
+        key_container = QVBoxLayout(self._api_key_widget)
+        key_container.setContentsMargins(0, 0, 0, 0)
+
         info = QLabel(
             "API ключ зберiгається безпечно в Windows Credential Manager, не в файлах проєкту."
         )
         info.setWordWrap(True)
         info.setProperty("class", "secondary")
-        layout.addWidget(info)
+        key_container.addWidget(info)
 
         # API ключ
         key_layout = QHBoxLayout()
@@ -187,7 +212,7 @@ class SettingsWindow(QDialog):
         self._show_key_btn.clicked.connect(self._toggle_key_visibility)
         key_layout.addWidget(self._show_key_btn)
 
-        layout.addLayout(key_layout)
+        key_container.addLayout(key_layout)
 
         # Кнопки
         btn_layout = QHBoxLayout()
@@ -205,13 +230,15 @@ class SettingsWindow(QDialog):
         delete_btn.clicked.connect(self._delete_api_key)
         btn_layout.addWidget(delete_btn)
 
-        layout.addLayout(btn_layout)
+        key_container.addLayout(btn_layout)
 
-        # Посилання
-        link_btn = QPushButton("Отримати API ключ на platform.openai.com")
-        link_btn.setProperty("flat", True)
-        link_btn.clicked.connect(lambda: webbrowser.open("https://platform.openai.com/api-keys"))
-        layout.addWidget(link_btn)
+        # Посилання на консоль провайдера
+        self._api_link_btn = QPushButton("Отримати API ключ на platform.openai.com")
+        self._api_link_btn.setProperty("flat", True)
+        self._api_link_btn.clicked.connect(self._open_provider_console)
+        key_container.addWidget(self._api_link_btn)
+
+        layout.addWidget(self._api_key_widget)
 
         # Безпека
         security_group = QGroupBox("Безпека та конфiденцiйнiсть")
@@ -220,7 +247,7 @@ class SettingsWindow(QDialog):
             "-- API ключ зберiгається виключно в Windows Credential Manager (шифрування ОС)\n"
             "-- Ключ НIКОЛИ не зберiгається в config.json, логах або кодi\n"
             "-- В локальному режимi данi нiкуди не вiдправляються\n"
-            "-- В режимi API аудiо надсилається тiльки на OpenAI для розпiзнавання\n"
+            "-- В режимi API аудiо надсилається тiльки на обраний провайдер\n"
             "-- Iсторiя зберiгається тiльки локально на вашому ПК\n"
             "-- Логи автоматично маскують будь-якi API ключi"
         )
@@ -231,6 +258,45 @@ class SettingsWindow(QDialog):
 
         layout.addStretch()
         return tab
+
+    def _on_provider_changed(self, index: int) -> None:
+        """Обробник змiни провайдера в комбобоксi."""
+        provider = self._provider_combo.currentData()
+        if not provider:
+            return
+        provider_info = API_PROVIDERS.get(provider, {})
+        is_coming_soon = bool(provider_info.get("coming_soon", False))
+
+        # Показати/сховати елементи
+        self._coming_soon_label.setVisible(is_coming_soon)
+        self._api_key_widget.setVisible(not is_coming_soon)
+
+        if not is_coming_soon:
+            # Оновити placeholder та посилання
+            placeholder = str(provider_info.get("key_placeholder", "API ключ..."))
+            self._api_key_input.setPlaceholderText(placeholder)
+
+            console_url = str(provider_info.get("console_url", ""))
+            domain = console_url.replace("https://", "").split("/")[0] if console_url else ""
+            self._api_link_btn.setText(f"Отримати API ключ на {domain}")
+
+            # Завантажити ключ для обраного провайдера
+            self._api_key_input.clear()
+            self._api_status_label.setText("")
+            from src.utils.secure_key import SecureKeyManager
+
+            if SecureKeyManager.is_configured(provider):
+                key = SecureKeyManager.get_key(provider)
+                if key:
+                    self._api_key_input.setText(key)
+
+    def _open_provider_console(self) -> None:
+        """Вiдкриває сторiнку консолi обраного провайдера."""
+        provider = self._provider_combo.currentData()
+        provider_info = API_PROVIDERS.get(provider, {})
+        url = str(provider_info.get("console_url", ""))
+        if url:
+            webbrowser.open(url)
 
     # ---- Вкладка "Модель Whisper" ----
 
@@ -251,7 +317,7 @@ class SettingsWindow(QDialog):
         for i, (name, info) in enumerate(WHISPER_MODELS.items()):
             self._model_table.setItem(i, 0, QTableWidgetItem(name))
             self._model_table.setItem(i, 1, QTableWidgetItem(f"{info['size_mb']} MB"))
-            ram = info.get("ram_mb", 0)
+            ram = int(info.get("ram_mb", 0))  # type: ignore[call-overload]
             ram_text = f"~{ram / 1000:.1f} GB" if ram >= 1000 else f"~{ram} MB"
             self._model_table.setItem(i, 2, QTableWidgetItem(ram_text))
             self._model_table.setItem(i, 3, QTableWidgetItem(info["description"]))  # type: ignore[call-overload]
@@ -618,13 +684,14 @@ class SettingsWindow(QDialog):
             self._device_combo.setCurrentIndex(idx)
         self._fp16_check.setChecked(local.get("fp16", False))
 
-        # API ключ -- завантажуємо з Credential Manager
-        from src.utils.secure_key import SecureKeyManager
-
-        if SecureKeyManager.is_configured():
-            key = SecureKeyManager.get_key()
-            if key:
-                self._api_key_input.setText(key)
+        # API провайдер
+        api = c.get("api", {})
+        provider = api.get("provider", "openai")
+        idx = self._provider_combo.findData(provider)
+        if idx >= 0:
+            self._provider_combo.setCurrentIndex(idx)
+        # Викликаємо вручну щоб оновити стан UI
+        self._on_provider_changed(self._provider_combo.currentIndex())
 
         # Гарячі клавіші
         hotkey = c.get("hotkey", {})
@@ -680,6 +747,9 @@ class SettingsWindow(QDialog):
         settings = {
             "mode": "local" if self._mode_local_radio.isChecked() else "api",
             "language": self._language_combo.currentData(),
+            "api": {
+                "provider": self._provider_combo.currentData() or "openai",
+            },
             "local": {
                 "model": self._get_selected_model(),
                 "device": self._device_combo.currentData(),
@@ -762,7 +832,8 @@ class SettingsWindow(QDialog):
             self._api_key_input.clear()
             from src.utils.secure_key import SecureKeyManager
 
-            SecureKeyManager.delete_key()
+            provider = self._provider_combo.currentData() or "openai"
+            SecureKeyManager.delete_key(provider)
             self._api_status_label.setText("Ключ видалено")
 
     def _capture_hotkey(self, input_field: QLineEdit) -> None:
@@ -944,3 +1015,7 @@ class SettingsWindow(QDialog):
     def get_api_key(self) -> str:
         """Повертає введений API ключ."""
         return self._api_key_input.text().strip()
+
+    def get_api_provider(self) -> str:
+        """Повертає обраний API провайдер."""
+        return self._provider_combo.currentData() or "openai"
