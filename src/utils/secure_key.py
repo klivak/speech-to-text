@@ -38,10 +38,14 @@ class SecureKeyManager:
         try:
             key = keyring.get_password(SecureKeyManager.APP_NAME, SecureKeyManager.KEY_NAME)
             if key:
-                logger.debug("API ключ отримано з Windows Credential Manager.")
+                logger.info(
+                    "API ключ отримано з Windows Credential Manager (довжина: %d).", len(key)
+                )
                 return key
-        except Exception:
-            logger.debug("Windows Credential Manager недоступний.")
+            else:
+                logger.info("API ключ НЕ знайдено в Windows Credential Manager.")
+        except Exception as e:
+            logger.warning("Windows Credential Manager недоступний: %s", e)
 
         # 3. .env файл
         load_dotenv()
@@ -60,7 +64,13 @@ class SecureKeyManager:
         """
         try:
             keyring.set_password(SecureKeyManager.APP_NAME, SecureKeyManager.KEY_NAME, key)
-            logger.info("API ключ збережено в Windows Credential Manager.")
+            logger.info("API ключ збережено в Windows Credential Manager (довжина: %d).", len(key))
+            # Перевіряємо що ключ справді зберігся
+            check = keyring.get_password(SecureKeyManager.APP_NAME, SecureKeyManager.KEY_NAME)
+            if check:
+                logger.info("Верифікація збереження: ключ присутній (довжина: %d).", len(check))
+            else:
+                logger.error("Верифікація збереження: ключ НЕ знайдено після збереження!")
             return True
         except Exception as e:
             logger.error("Не вдалося зберегти API ключ: %s", e)

@@ -532,6 +532,10 @@ class EchoScribeApp(QObject):
         # Зберігаємо API ключ окремо
         if self._settings_window:
             api_key = self._settings_window.get_api_key()
+            logger.info(
+                "Збереження налаштувань: API ключ з поля вводу (довжина: %d).",
+                len(api_key) if api_key else 0,
+            )
             if api_key:
                 SecureKeyManager.save_key(api_key)
                 settings.setdefault("api", {})["api_key_configured"] = True
