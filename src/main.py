@@ -7,12 +7,56 @@ import sys
 
 from dotenv import load_dotenv
 
+_MUTEX_NAME = "EchoScribe_SingleInstance"
+
+
+def _kill_existing() -> None:
+    """Завершує iснуючий процес EchoScribe."""
+    import subprocess
+
+    # Шукаємо процеси python з src.main або EchoScribe
+    current_pid = os.getpid()
+    try:
+        result = subprocess.run(
+            ["wmic", "process", "where", "name like '%python%'", "get", "processid,commandline"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        for line in result.stdout.splitlines():
+            if "src.main" in line or "src\\main" in line or "EchoScribe" in line:
+                parts = line.strip().split()
+                if parts:
+                    try:
+                        pid = int(parts[-1])
+                        if pid != current_pid:
+                            os.kill(pid, 9)
+                    except (ValueError, OSError):
+                        pass
+    except Exception:
+        pass
+
 
 def main() -> None:
     """Запуск додатку EchoScribe."""
-    # Встановлюємо AppUserModelID для коректного відображення назви в Windows
     import ctypes
 
+    # Перевiрка на єдиний екземпляр через Windows Named Mutex
+    kernel32 = ctypes.windll.kernel32  # type: ignore[attr-defined]
+    mutex = kernel32.CreateMutexW(None, True, _MUTEX_NAME)
+    last_error = kernel32.GetLastError()
+
+    if last_error == 183:  # ERROR_ALREADY_EXISTS
+        # Вже є запущений екземпляр -- завершуємо його та запускаємо новий
+        kernel32.CloseHandle(mutex)
+        _kill_existing()
+        # Повторно створюємо mutex
+        import time
+
+        time.sleep(1)
+        mutex = kernel32.CreateMutexW(None, True, _MUTEX_NAME)
+
+    # Встановлюємо AppUserModelID для коректного відображення назви в Windows
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("EchoScribe")  # type: ignore[attr-defined]
 
     # Завантажуємо змінні оточення
@@ -50,7 +94,13 @@ def main() -> None:
     logger.info("EchoScribe готовий до роботи.")
 
     # Запускаємо event loop
-    sys.exit(app.exec())
+    exit_code = app.exec()
+
+    # Звiльняємо mutex
+    kernel32.ReleaseMutex(mutex)
+    kernel32.CloseHandle(mutex)
+
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
