@@ -11,7 +11,7 @@ import numpy as np
 
 from src.constants import DEFAULT_MODEL, SAMPLE_RATE
 from src.core.transcriber import BaseTranscriber, TranscriptionResult
-from src.utils.gpu_detect import get_optimal_device
+from src.utils.gpu_detect import get_optimal_device, is_cuda_available
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +59,12 @@ class LocalTranscriber(BaseTranscriber):
         """
         if device == "auto":
             device = get_optimal_device()
+
+        # Перевiрка доступностi CUDA перед переключенням
+        if device == "cuda" and not is_cuda_available():
+            self._load_error = "CUDA GPU недоступний. Встановiть CUDA-версiю PyTorch."
+            logger.warning("Спроба переключити на CUDA, але GPU недоступний.")
+            return
 
         if device == self._current_device and self._model is not None:
             return

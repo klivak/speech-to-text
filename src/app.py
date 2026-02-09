@@ -577,17 +577,24 @@ class EchoScribeApp(QObject):
         if "fp16" in local_cfg:
             self._local_transcriber._fp16 = local_cfg["fp16"]
 
-        # Гарячі клавіші
+        # Гарячі клавіші (оновлюємо все разом, щоб уникнути багаторазової перереєстрацiї)
         hotkey_cfg = settings.get("hotkey", {})
-        if "record" in hotkey_cfg or "mode" in hotkey_cfg:
-            self._hotkey_manager.update_hotkey(
-                hotkey_cfg.get("record", "ctrl+shift"),
-                hotkey_cfg.get("mode", "push_to_talk"),
-            )
-        if "switch_language" in hotkey_cfg:
-            self._hotkey_manager.update_language_hotkey(hotkey_cfg["switch_language"])
-        if "switch_device" in hotkey_cfg:
-            self._hotkey_manager.update_device_hotkey(hotkey_cfg["switch_device"])
+        if hotkey_cfg:
+            was_active = self._hotkey_manager.is_active
+            if was_active:
+                self._hotkey_manager.stop()
+
+            if "record" in hotkey_cfg:
+                self._hotkey_manager._hotkey = hotkey_cfg["record"]
+            if "mode" in hotkey_cfg:
+                self._hotkey_manager._mode = hotkey_cfg["mode"]
+            if "switch_language" in hotkey_cfg:
+                self._hotkey_manager._language_hotkey = hotkey_cfg["switch_language"]
+            if "switch_device" in hotkey_cfg:
+                self._hotkey_manager._device_hotkey = hotkey_cfg["switch_device"]
+
+            if was_active:
+                self._hotkey_manager.start()
 
         # Оверлей
         overlay_cfg = settings.get("overlay", {})
