@@ -8,7 +8,7 @@ import threading
 from typing import Callable
 
 import keyboard
-from PyQt6.QtCore import QObject, QTimer, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal
 
 from src.constants import DEFAULT_HOTKEY, HOTKEY_MODE_PUSH, HOTKEY_MODE_TOGGLE
 
@@ -57,7 +57,7 @@ class HotkeyManager(QObject):
         self._pending_start = False
         self._extra_key_pressed = False
         self._all_keys_hook: Callable | None = None
-        self._delay_timer: QTimer | None = None
+        self._delay_timer: threading.Timer | None = None
 
     @property
     def is_recording(self) -> bool:
@@ -227,11 +227,10 @@ class HotkeyManager(QObject):
 
         self._all_keys_hook = keyboard.hook(_on_any_key)
 
-        # Запуск таймера затримки в основному потоцi (Qt)
-        self._delay_timer = QTimer()
-        self._delay_timer.setSingleShot(True)
-        self._delay_timer.timeout.connect(self._on_delay_finished)
-        self._delay_timer.start(_PUSH_DELAY_MS)
+        # Запуск таймера затримки
+        self._delay_timer = threading.Timer(_PUSH_DELAY_MS / 1000.0, self._on_delay_finished)
+        self._delay_timer.daemon = True
+        self._delay_timer.start()
 
     def _on_delay_finished(self) -> None:
         """Викликається пiсля затримки -- починає запис якщо не було iнших клавiш."""
@@ -255,7 +254,7 @@ class HotkeyManager(QObject):
         if self._pending_start:
             self._pending_start = False
             if self._delay_timer is not None:
-                self._delay_timer.stop()
+                self._delay_timer.cancel()
             if self._all_keys_hook is not None:
                 with contextlib.suppress(ValueError, KeyError):
                     keyboard.unhook(self._all_keys_hook)
