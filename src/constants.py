@@ -105,6 +105,7 @@ DEFAULT_CONFIG = {
     },
     "sounds": {
         "enabled": True,
+        "pack": "standard",
         "volume": 0.5,
         "on_start": True,
         "on_stop": True,

@@ -433,6 +433,15 @@ class SettingsWindow(QDialog):
         layout.addWidget(self._sounds_enabled_check)
 
         form = QFormLayout()
+
+        # Набiр звукiв
+        from src.audio.sounds import SOUND_PACKS
+
+        self._sound_pack_combo = QComboBox()
+        for key, label in SOUND_PACKS.items():
+            self._sound_pack_combo.addItem(label, key)
+        form.addRow("Набiр звукiв:", self._sound_pack_combo)
+
         self._volume_slider = QSlider(Qt.Orientation.Horizontal)
         self._volume_slider.setRange(0, 100)
         self._volume_slider.setValue(50)
@@ -638,6 +647,10 @@ class SettingsWindow(QDialog):
         # Звуки
         sounds = c.get("sounds", {})
         self._sounds_enabled_check.setChecked(sounds.get("enabled", True))
+        pack = sounds.get("pack", "standard")
+        idx = self._sound_pack_combo.findData(pack)
+        if idx >= 0:
+            self._sound_pack_combo.setCurrentIndex(idx)
         self._volume_slider.setValue(int(sounds.get("volume", 0.5) * 100))
         self._sound_start_check.setChecked(sounds.get("on_start", True))
         self._sound_stop_check.setChecked(sounds.get("on_stop", True))
@@ -680,6 +693,7 @@ class SettingsWindow(QDialog):
             },
             "sounds": {
                 "enabled": self._sounds_enabled_check.isChecked(),
+                "pack": self._sound_pack_combo.currentData(),
                 "volume": self._volume_slider.value() / 100.0,
                 "on_start": self._sound_start_check.isChecked(),
                 "on_stop": self._sound_stop_check.isChecked(),
@@ -726,13 +740,14 @@ class SettingsWindow(QDialog):
 
     def _delete_api_key(self) -> None:
         """Видаляє API ключ з підтвердженням."""
-        reply = QMessageBox.question(
-            self,
-            "Видалити API ключ",
-            "Ви впевненi що хочете видалити API ключ?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Видалити API ключ")
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setText("Ви впевненi що хочете видалити API ключ?")
+        yes_btn = msg.addButton("Так", QMessageBox.ButtonRole.YesRole)
+        msg.addButton("Нi", QMessageBox.ButtonRole.NoRole)
+        msg.exec()
+        if msg.clickedButton() == yes_btn:
             self._api_key_input.clear()
             from src.utils.secure_key import SecureKeyManager
 
@@ -808,13 +823,14 @@ class SettingsWindow(QDialog):
 
     def _reset_dictionary(self) -> None:
         """Скидає словник до дефолтних значень."""
-        reply = QMessageBox.question(
-            self,
-            "Скинути словник",
-            "Скинути словник до дефолтних значень? Всi кастомнi записи будуть видаленi.",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Скинути словник")
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setText("Скинути словник до дефолтних значень? Всi кастомнi записи будуть видаленi.")
+        yes_btn = msg.addButton("Так", QMessageBox.ButtonRole.YesRole)
+        msg.addButton("Нi", QMessageBox.ButtonRole.NoRole)
+        msg.exec()
+        if msg.clickedButton() == yes_btn:
             self.settings_changed.emit({"_action": "reset_dictionary"})
 
     # ---- Публічні методи для оновлення ----

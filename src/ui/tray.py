@@ -284,7 +284,7 @@ class SystemTray(QSystemTrayIcon):
             f'<p><a href="https://github.com/klivak/speech-to-text">GitHub</a></p>'
         )
         msg.setTextFormat(Qt.TextFormat.RichText)
-        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.addButton("Ок", QMessageBox.ButtonRole.AcceptRole)
 
         # Іконка вікна
         msg.setWindowIcon(_create_colored_icon(QColor(124, 110, 240)))

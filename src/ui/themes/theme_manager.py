@@ -37,6 +37,13 @@ def _get_themes_dir() -> Path:
     return base
 
 
+def _get_assets_dir() -> Path:
+    """Повертає шлях до директорії assets."""
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS) / "assets"  # type: ignore[attr-defined]
+    return Path(__file__).parent.parent.parent.parent / "assets"
+
+
 def _load_qss(theme_name: str) -> str:
     """Завантажує QSS файл теми."""
     themes_dir = _get_themes_dir()
@@ -48,7 +55,11 @@ def _load_qss(theme_name: str) -> str:
 
     try:
         with open(qss_file, encoding="utf-8") as f:
-            return f.read()
+            qss = f.read()
+        # Замiна вiдносних шляхiв assets/ на абсолютнi
+        assets_dir = _get_assets_dir()
+        qss = qss.replace("url(assets/", f"url({assets_dir.as_posix()}/")
+        return qss
     except OSError as e:
         logger.error("Помилка читання теми: %s", e)
         return ""

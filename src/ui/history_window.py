@@ -184,13 +184,14 @@ class HistoryWindow(QDialog):
 
     def _clear_history(self) -> None:
         """Очищає всю історію з підтвердженням."""
-        reply = QMessageBox.question(
-            self,
-            "Очистити iсторiю",
-            "Ви впевненi що хочете видалити всю iсторiю розпiзнавань?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        if reply == QMessageBox.StandardButton.Yes:
+        msg = QMessageBox(self)
+        msg.setWindowTitle("Очистити iсторiю")
+        msg.setIcon(QMessageBox.Icon.Question)
+        msg.setText("Ви впевненi що хочете видалити всю iсторiю розпiзнавань?")
+        yes_btn = msg.addButton("Так", QMessageBox.ButtonRole.YesRole)
+        msg.addButton("Нi", QMessageBox.ButtonRole.NoRole)
+        msg.exec()
+        if msg.clickedButton() == yes_btn:
             self.history_cleared.emit()
             self._entries.clear()
             self._load_entries()

@@ -113,6 +113,7 @@ class EchoScribeApp(QObject):
         self._sounds = SoundManager(
             enabled=sounds_cfg.get("enabled", True),
             volume=sounds_cfg.get("volume", 0.5),
+            pack=sounds_cfg.get("pack", "standard"),
         )
         self._sounds.set_sound_enabled("start", sounds_cfg.get("on_start", True))
         self._sounds.set_sound_enabled("stop", sounds_cfg.get("on_stop", True))
@@ -621,6 +622,7 @@ class EchoScribeApp(QObject):
         sounds_cfg = settings.get("sounds", {})
         if sounds_cfg:
             self._sounds.enabled = sounds_cfg.get("enabled", True)
+            self._sounds.pack = sounds_cfg.get("pack", "standard")
             self._sounds.volume = sounds_cfg.get("volume", 0.5)
             self._sounds.set_sound_enabled("start", sounds_cfg.get("on_start", True))
             self._sounds.set_sound_enabled("stop", sounds_cfg.get("on_stop", True))
@@ -703,24 +705,27 @@ class EchoScribeApp(QObject):
 
             from PyQt6.QtWidgets import QMessageBox
 
-            reply = QMessageBox.information(
-                None,
-                "Доступне оновлення",
+            msg = QMessageBox()
+            msg.setWindowTitle("Доступне оновлення")
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText(
                 f"Нова версiя: {result['version']} (поточна: {result['current']})\n\n"
-                f"Вiдкрити сторiнку завантаження?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                f"Вiдкрити сторiнку завантаження?"
             )
-            if reply == QMessageBox.StandardButton.Yes:
+            yes_btn = msg.addButton("Так", QMessageBox.ButtonRole.YesRole)
+            msg.addButton("Нi", QMessageBox.ButtonRole.NoRole)
+            msg.exec()
+            if msg.clickedButton() == yes_btn:
                 webbrowser.open(result["url"])
         else:
             from PyQt6.QtWidgets import QMessageBox
 
-            QMessageBox.information(
-                None,
-                "Оновлення",
-                f"Ви використовуєте найновiшу версiю ({APP_VERSION}).",
-                QMessageBox.StandardButton.Ok,
-            )
+            msg = QMessageBox()
+            msg.setWindowTitle("Оновлення")
+            msg.setIcon(QMessageBox.Icon.Information)
+            msg.setText(f"Ви використовуєте найновiшу версiю ({APP_VERSION}).")
+            msg.addButton("Ок", QMessageBox.ButtonRole.AcceptRole)
+            msg.exec()
 
     # ---- Lifecycle ----
 

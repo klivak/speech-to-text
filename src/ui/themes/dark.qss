@@ -145,6 +145,7 @@ QCheckBox::indicator {
 QCheckBox::indicator:checked {
     background-color: #7c6ef0;
     border-color: #7c6ef0;
+    image: url(assets/check_white.svg);
 }
 
 QCheckBox::indicator:hover {
