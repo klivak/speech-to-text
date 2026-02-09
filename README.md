@@ -233,6 +233,10 @@ pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe --add-
 - [ ] Settings profiles (work, personal, coding)
 - [ ] Portable mode (all data in one folder)
 
+### API Providers
+- [ ] Groq Whisper API -- free Whisper large-v3, very fast
+- [ ] Deepgram API -- $0.0043/min, 200 min/month free tier
+
 ### Integrations
 - [ ] VS Code extension
 - [ ] Obsidian plugin for voice notes
