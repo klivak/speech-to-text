@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Sensitive -- NEVER commit
+.env
+*.pem
+*.key
+
+# User data
+config.json
+history.json
+dictionary.json
+
+# Claude Code
+.claude/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.mypy_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Whisper models cache
+models/
+*.pt
+
+# Logs
+*.log
+
+# Build artifacts
+*.exe
+*.spec
+
+# Virtual env
+venv/
