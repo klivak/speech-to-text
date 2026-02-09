@@ -12,7 +12,7 @@ def is_cuda_available() -> bool:
     try:
         import torch
 
-        return torch.cuda.is_available()
+        return bool(torch.cuda.is_available())
     except Exception:
         return False
 
@@ -23,7 +23,7 @@ def get_gpu_name() -> str | None:
         import torch
 
         if torch.cuda.is_available():
-            return torch.cuda.get_device_name(0)
+            return str(torch.cuda.get_device_name(0))
     except Exception:
         pass
     return None

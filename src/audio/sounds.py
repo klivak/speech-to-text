@@ -113,9 +113,9 @@ class SoundManager:
             if os.name == "nt":
                 import winsound
 
-                winsound.PlaySound(
+                winsound.PlaySound(  # type: ignore[attr-defined]
                     str(sound_file),
-                    winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT,
+                    winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT,  # type: ignore[attr-defined]
                 )
             else:
                 logger.debug("Звуки підтримуються тільки на Windows.")

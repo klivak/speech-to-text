@@ -16,13 +16,13 @@ def get_windows_theme() -> str:
     try:
         import winreg
 
-        registry = winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
-        key = winreg.OpenKey(
+        registry = winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)  # type: ignore[attr-defined]
+        key = winreg.OpenKey(  # type: ignore[attr-defined]
             registry,
             r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
         )
-        value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
-        winreg.CloseKey(key)
+        value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")  # type: ignore[attr-defined]
+        winreg.CloseKey(key)  # type: ignore[attr-defined]
         return "light" if value == 1 else "dark"
     except Exception:
         return "dark"

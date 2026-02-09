@@ -73,7 +73,7 @@ def paste_text(text: str) -> bool:
 
 def _send_ctrl_v() -> None:
     """Емулює Ctrl+V через Win32 SendInput API."""
-    user32 = ctypes.windll.user32
+    user32 = ctypes.windll.user32  # type: ignore[attr-defined]
     user32.keybd_event(_VK_CONTROL, 0, 0, 0)
     user32.keybd_event(_VK_V, 0, 0, 0)
     time.sleep(0.02)
