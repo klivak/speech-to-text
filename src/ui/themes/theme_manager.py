@@ -87,10 +87,7 @@ class ThemeManager:
         if preference is not None:
             self._preference = preference
 
-        if self._preference == "system":
-            theme = get_windows_theme()
-        else:
-            theme = self._preference
+        theme = get_windows_theme() if self._preference == "system" else self._preference
 
         if theme == self._current_theme:
             return

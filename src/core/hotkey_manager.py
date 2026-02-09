@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Callable, Optional
+from typing import Callable
 
 import keyboard
 from PyQt6.QtCore import QObject, pyqtSignal

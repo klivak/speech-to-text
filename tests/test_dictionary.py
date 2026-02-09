@@ -5,9 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
-from src.constants import DEFAULT_DICTIONARY
 from src.core.dictionary import DictionaryManager
 
 

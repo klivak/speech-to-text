@@ -8,7 +8,6 @@ from PyQt6.QtCore import QPoint, QRectF, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import (
     QBrush,
     QColor,
-    QFont,
     QMouseEvent,
     QPainter,
     QPaintEvent,
@@ -150,10 +149,7 @@ class FloatingMicButton(QWidget):
             bg_color = QColor(124, 110, 240) if self._is_dark else QColor(103, 80, 164)
         else:
             # Напівпрозоре
-            if self._is_dark:
-                bg_color = QColor(60, 60, 80, 200)
-            else:
-                bg_color = QColor(240, 240, 250, 220)
+            bg_color = QColor(60, 60, 80, 200) if self._is_dark else QColor(240, 240, 250, 220)
 
         painter.setBrush(QBrush(bg_color))
         painter.setPen(Qt.PenStyle.NoPen)
@@ -203,7 +199,7 @@ class FloatingMicButton(QWidget):
         self._is_hovered = False
         self.update()
 
-    def mousePressEvent(self, event: QMouseEvent) -> None:  # noqa: N802
+    def mousePressEvent(self, event: QMouseEvent) -> None:  # type: ignore[override]  # noqa: N802
         """Натискання миші."""
         if event.button() == Qt.MouseButton.LeftButton:
             self._dragging = True
@@ -211,13 +207,13 @@ class FloatingMicButton(QWidget):
         elif event.button() == Qt.MouseButton.RightButton:
             self._show_context_menu(event.globalPosition().toPoint())
 
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:  # noqa: N802
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:  # type: ignore[override]  # noqa: N802
         """Переміщення миші (перетягування)."""
         if self._dragging:
             new_pos = event.globalPosition().toPoint() - self._drag_offset
             self.move(new_pos)
 
-    def mouseReleaseEvent(self, event: QMouseEvent) -> None:  # noqa: N802
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:  # type: ignore[override]  # noqa: N802
         """Відпускання миші."""
         if event.button() == Qt.MouseButton.LeftButton:
             if self._dragging:

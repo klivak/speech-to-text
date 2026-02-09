@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import webbrowser
 from typing import Any
@@ -217,14 +218,14 @@ class SettingsWindow(QDialog):
         # Таблиця моделей
         self._model_table = QTableWidget(len(WHISPER_MODELS), 4)
         self._model_table.setHorizontalHeaderLabels(["Модель", "Розмiр", "Опис", "Статус"])
-        self._model_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self._model_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  # type: ignore[union-attr]
         self._model_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self._model_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
 
         for i, (name, info) in enumerate(WHISPER_MODELS.items()):
             self._model_table.setItem(i, 0, QTableWidgetItem(name))
             self._model_table.setItem(i, 1, QTableWidgetItem(f"{info['size_mb']} MB"))
-            self._model_table.setItem(i, 2, QTableWidgetItem(info["description"]))
+            self._model_table.setItem(i, 2, QTableWidgetItem(info["description"]))  # type: ignore[call-overload]
             self._model_table.setItem(i, 3, QTableWidgetItem("--"))
 
         layout.addWidget(self._model_table)
@@ -284,7 +285,7 @@ class SettingsWindow(QDialog):
         # Таблиця порівняння (заповнюється ззовні)
         self._bench_table = QTableWidget(0, 3)
         self._bench_table.setHorizontalHeaderLabels(["Пристрiй", "Час обробки", "RTF"])
-        self._bench_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self._bench_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  # type: ignore[union-attr]
         self._bench_table.setMaximumHeight(120)
         self._bench_table.setVisible(False)
         bench_layout.addWidget(self._bench_table)
@@ -305,7 +306,7 @@ class SettingsWindow(QDialog):
         self._hotkey_input = QLineEdit()
         self._hotkey_input.setPlaceholderText("Натиснiть комбiнацiю клавiш...")
         self._hotkey_input.setReadOnly(True)
-        self._hotkey_input.mousePressEvent = lambda e: self._capture_hotkey(self._hotkey_input)
+        self._hotkey_input.mousePressEvent = lambda e: self._capture_hotkey(self._hotkey_input)  # type: ignore[method-assign,assignment]
         form.addRow("Запис:", self._hotkey_input)
 
         # Режим
@@ -318,7 +319,7 @@ class SettingsWindow(QDialog):
         self._lang_hotkey_input = QLineEdit()
         self._lang_hotkey_input.setPlaceholderText("Не призначено")
         self._lang_hotkey_input.setReadOnly(True)
-        self._lang_hotkey_input.mousePressEvent = lambda e: self._capture_hotkey(
+        self._lang_hotkey_input.mousePressEvent = lambda e: self._capture_hotkey(  # type: ignore[method-assign,assignment]
             self._lang_hotkey_input
         )
         form.addRow("Перемикання мови:", self._lang_hotkey_input)
@@ -326,7 +327,7 @@ class SettingsWindow(QDialog):
         self._device_hotkey_input = QLineEdit()
         self._device_hotkey_input.setPlaceholderText("Не призначено")
         self._device_hotkey_input.setReadOnly(True)
-        self._device_hotkey_input.mousePressEvent = lambda e: self._capture_hotkey(
+        self._device_hotkey_input.mousePressEvent = lambda e: self._capture_hotkey(  # type: ignore[method-assign,assignment]
             self._device_hotkey_input
         )
         form.addRow("Перемикання CPU/GPU:", self._device_hotkey_input)
@@ -445,7 +446,7 @@ class SettingsWindow(QDialog):
 
         self._punct_table = QTableWidget(0, 2)
         self._punct_table.setHorizontalHeaderLabels(["Команда", "Символ"])
-        self._punct_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self._punct_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  # type: ignore[union-attr]
         layout.addWidget(self._punct_table)
 
         btn_layout = QHBoxLayout()
@@ -478,7 +479,7 @@ class SettingsWindow(QDialog):
 
         self._dict_table = QTableWidget(0, 2)
         self._dict_table.setHorizontalHeaderLabels(["Як вимовляється", "Правильний запис"])
-        self._dict_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self._dict_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  # type: ignore[union-attr]
         layout.addWidget(self._dict_table)
 
         btn_layout = QHBoxLayout()
@@ -683,7 +684,7 @@ class SettingsWindow(QDialog):
             item = self._model_table.item(row, 0)
             if item:
                 return item.text()
-        return self._config.get("local", {}).get("model", "small")
+        return self._config.get("local", {}).get("model", "small")  # type: ignore[no-any-return]
 
     # ---- Допоміжні методи ----
 
@@ -730,10 +731,7 @@ class SettingsWindow(QDialog):
 
                 key = event.name
                 if key not in ("ctrl", "shift", "alt", "unknown"):
-                    if modifiers:
-                        combo = "+".join(modifiers + [key])
-                    else:
-                        combo = key
+                    combo = "+".join(modifiers + [key]) if modifiers else key
                     input_field.setText(combo)
                     keyboard.unhook(hook)
 
@@ -741,10 +739,8 @@ class SettingsWindow(QDialog):
 
         # Автоочищення хука через 10 секунд як fallback
         def _cleanup_hook() -> None:
-            try:
+            with contextlib.suppress(Exception):
                 keyboard.unhook(hook)
-            except Exception:
-                pass
 
         QTimer.singleShot(10000, _cleanup_hook)
 

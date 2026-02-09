@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 from src.utils.secure_key import SecureKeyManager
 
@@ -32,12 +30,14 @@ class TestSecureKeyManager:
 
     def test_get_key_none_when_not_configured(self) -> None:
         """Повертає None якщо ключ не налаштовано."""
-        with patch.dict(os.environ, {}, clear=True):
-            with patch("src.utils.secure_key.keyring") as mock_kr:
-                mock_kr.get_password.return_value = None
-                with patch("src.utils.secure_key.load_dotenv"):
-                    key = SecureKeyManager.get_key()
-                    assert key is None
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch("src.utils.secure_key.keyring") as mock_kr,
+            patch("src.utils.secure_key.load_dotenv"),
+        ):
+            mock_kr.get_password.return_value = None
+            key = SecureKeyManager.get_key()
+            assert key is None
 
     def test_is_configured_true(self) -> None:
         """is_configured повертає True коли ключ є."""
@@ -46,8 +46,10 @@ class TestSecureKeyManager:
 
     def test_is_configured_false(self) -> None:
         """is_configured повертає False коли ключа немає."""
-        with patch.dict(os.environ, {}, clear=True):
-            with patch("src.utils.secure_key.keyring") as mock_kr:
-                mock_kr.get_password.return_value = None
-                with patch("src.utils.secure_key.load_dotenv"):
-                    assert not SecureKeyManager.is_configured()
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch("src.utils.secure_key.keyring") as mock_kr,
+            patch("src.utils.secure_key.load_dotenv"),
+        ):
+            mock_kr.get_password.return_value = None
+            assert not SecureKeyManager.is_configured()

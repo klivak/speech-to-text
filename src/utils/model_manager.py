@@ -32,16 +32,13 @@ def is_model_downloaded(model_name: str) -> bool:
         return False
 
     # Перевіряємо наявність будь-якого файлу з назвою моделі
-    for f in cache_dir.iterdir():
-        if model_name in f.name and f.suffix == ".pt":
-            return True
-    return False
+    return any(model_name in f.name and f.suffix == ".pt" for f in cache_dir.iterdir())
 
 
 def get_model_size_mb(model_name: str) -> int:
     """Повертає очікуваний розмір моделі в мегабайтах."""
     info = WHISPER_MODELS.get(model_name, {})
-    return info.get("size_mb", 0)
+    return int(info.get("size_mb", 0))  # type: ignore[call-overload,no-any-return]
 
 
 def get_models_status() -> dict[str, dict[str, object]]:

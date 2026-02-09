@@ -5,7 +5,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)]()
-[![CI](https://github.com/your-username/voicetype/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/voicetype/actions)
+[![CI](https://github.com/klivak/speech-to-text/actions/workflows/ci.yml/badge.svg)](https://github.com/klivak/speech-to-text/actions)
 
 > Hold a hotkey, speak, release -- text is instantly pasted into any application.
 

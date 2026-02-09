@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Optional
 
 import numpy as np
 from PyQt6.QtCore import QObject, Qt, QTimer, pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon
+from PyQt6.QtWidgets import QApplication, QSystemTrayIcon
 
 from src.audio.sounds import SoundManager, ensure_default_sounds
 from src.config import ConfigManager
@@ -35,7 +34,7 @@ from src.ui.settings_window import SettingsWindow
 from src.ui.themes.theme_manager import ThemeManager
 from src.ui.tray import SystemTray
 from src.utils.clipboard import paste_text
-from src.utils.gpu_detect import get_available_devices, get_gpu_name
+from src.utils.gpu_detect import get_gpu_name
 from src.utils.secure_key import SecureKeyManager
 
 logger = logging.getLogger(__name__)
@@ -72,13 +71,9 @@ class VoiceTypeApp(QObject):
         self._init_hotkeys()
 
         # Підключення внутрішніх сигналів (QueuedConnection для безпечної передачі з потоків)
-        self._transcription_done.connect(
-            self._on_transcription_done, Qt.ConnectionType.QueuedConnection
-        )
-        self._transcription_error.connect(
-            self._on_transcription_error, Qt.ConnectionType.QueuedConnection
-        )
-        self._benchmark_done.connect(self._on_benchmark_done, Qt.ConnectionType.QueuedConnection)
+        self._transcription_done.connect(self._on_transcription_done)
+        self._transcription_error.connect(self._on_transcription_error)
+        self._benchmark_done.connect(self._on_benchmark_done)
 
         # Таймер перевірки завантаження моделі
         self._loading_timer = QTimer(self)
@@ -144,7 +139,7 @@ class VoiceTypeApp(QObject):
 
         # Оверлей
         overlay_cfg = self._config.get_section("overlay")
-        self._overlay: Optional[RecordingOverlay] = None
+        self._overlay: RecordingOverlay | None = None
         if overlay_cfg.get("enabled", True):
             self._overlay = RecordingOverlay(
                 size=overlay_cfg.get("size", "medium"),
@@ -155,7 +150,7 @@ class VoiceTypeApp(QObject):
 
         # Плаваюча кнопка
         fb_cfg = self._config.get_section("floating_button")
-        self._floating_btn: Optional[FloatingMicButton] = None
+        self._floating_btn: FloatingMicButton | None = None
         if fb_cfg.get("enabled", False):
             self._floating_btn = FloatingMicButton(
                 size=fb_cfg.get("size", "medium"),
@@ -184,8 +179,8 @@ class VoiceTypeApp(QObject):
         self._tray.show()
 
         # Вікна (створюються по запиту)
-        self._settings_window: Optional[SettingsWindow] = None
-        self._history_window: Optional[HistoryWindow] = None
+        self._settings_window: SettingsWindow | None = None
+        self._history_window: HistoryWindow | None = None
 
         # Стан
         self._is_enabled = True

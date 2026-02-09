@@ -68,6 +68,7 @@ class HistoryWindow(QDialog):
         self._table = QTableWidget(0, 6)
         self._table.setHorizontalHeaderLabels(["Час", "Мова", "Режим", "Обробка", "Текст", ""])
         header = self._table.horizontalHeader()
+        assert header is not None
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)

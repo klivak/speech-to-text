@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 import queue
 import threading
-from typing import Optional
 
 import numpy as np
 import sounddevice as sd
@@ -35,7 +34,7 @@ class AudioRecorder(QObject):
         self._channels = channels
         self._is_recording = False
         self._audio_queue: queue.Queue[np.ndarray] = queue.Queue()
-        self._stream: Optional[sd.InputStream] = None
+        self._stream: sd.InputStream | None = None
         self._lock = threading.Lock()
 
     @property

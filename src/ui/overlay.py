@@ -19,7 +19,7 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import QApplication, QWidget
 
-from src.constants import OVERLAY_POSITIONS, OVERLAY_SIZES
+from src.constants import OVERLAY_SIZES
 
 
 class OverlayState(Enum):

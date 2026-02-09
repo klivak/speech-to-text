@@ -36,7 +36,7 @@ def get_gpu_vram_gb() -> float | None:
 
         if torch.cuda.is_available():
             props = torch.cuda.get_device_properties(0)
-            return props.total_mem / (1024**3)
+            return float(props.total_memory / (1024**3))
     except Exception:
         pass
     return None
@@ -53,7 +53,7 @@ def get_available_devices() -> list[dict[str, object]]:
 
         if torch.cuda.is_available():
             gpu_name = torch.cuda.get_device_name(0)
-            vram = torch.cuda.get_device_properties(0).total_mem / (1024**3)
+            vram = torch.cuda.get_device_properties(0).total_memory / (1024**3)
             devices.append(
                 {
                     "id": "cuda",

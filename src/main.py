@@ -40,7 +40,7 @@ def main() -> None:
     # Запускаємо головний клас
     from src.app import VoiceTypeApp
 
-    voice_app = VoiceTypeApp(app)
+    voice_app = VoiceTypeApp(app)  # noqa: F841  -- prevent GC
 
     logger.info("VoiceType готовий до роботи.")
 

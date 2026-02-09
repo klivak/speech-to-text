@@ -147,7 +147,7 @@ def ensure_default_sounds() -> None:
         filepath = sounds_dir / filename
         if not filepath.exists():
             try:
-                generate_tone_wav(str(filepath), **config)
+                generate_tone_wav(str(filepath), **config)  # type: ignore[arg-type]
                 logger.debug("Створено звуковий файл: %s", filename)
             except Exception as e:
                 logger.warning("Не вдалося створити звук %s: %s", filename, e)

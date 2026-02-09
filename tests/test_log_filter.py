@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from src.utils.log_filter import mask_api_key
 
 

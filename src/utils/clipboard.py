@@ -11,6 +11,11 @@ import pyperclip
 
 logger = logging.getLogger(__name__)
 
+# Win32 константи
+_VK_CONTROL = 0x11
+_VK_V = 0x56
+_KEYEVENTF_KEYUP = 0x0002
+
 
 def paste_text(text: str) -> bool:
     """Вставляє текст в активне вікно через буфер обміну.
@@ -68,13 +73,9 @@ def paste_text(text: str) -> bool:
 
 def _send_ctrl_v() -> None:
     """Емулює Ctrl+V через Win32 SendInput API."""
-    VK_CONTROL = 0x11
-    VK_V = 0x56
-    KEYEVENTF_KEYUP = 0x0002
-
     user32 = ctypes.windll.user32
-    user32.keybd_event(VK_CONTROL, 0, 0, 0)
-    user32.keybd_event(VK_V, 0, 0, 0)
+    user32.keybd_event(_VK_CONTROL, 0, 0, 0)
+    user32.keybd_event(_VK_V, 0, 0, 0)
     time.sleep(0.02)
-    user32.keybd_event(VK_V, 0, KEYEVENTF_KEYUP, 0)
-    user32.keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0)
+    user32.keybd_event(_VK_V, 0, _KEYEVENTF_KEYUP, 0)
+    user32.keybd_event(_VK_CONTROL, 0, _KEYEVENTF_KEYUP, 0)

@@ -114,6 +114,7 @@ class SystemTray(QSystemTrayIcon):
 
         # Мова
         lang_menu = self._menu.addMenu("Мова")
+        assert lang_menu is not None
         self._lang_actions: dict[str, QAction] = {}
         for code, name in SUPPORTED_LANGUAGES.items():
             action = QAction(name, lang_menu)
@@ -125,6 +126,7 @@ class SystemTray(QSystemTrayIcon):
 
         # Пристрій (тільки для локального режиму)
         self._device_menu = self._menu.addMenu("Пристрій")
+        assert self._device_menu is not None
         self._cpu_action = QAction("CPU", self._device_menu)
         self._cpu_action.setCheckable(True)
         self._cpu_action.setChecked(self._device == "cpu")
@@ -197,7 +199,7 @@ class SystemTray(QSystemTrayIcon):
         """Оновлює стан трею."""
         if mode is not None:
             self._mode = mode
-            self._device_menu.setEnabled(mode == "local")
+            self._device_menu.setEnabled(mode == "local")  # type: ignore[union-attr]
         if model is not None:
             self._model = model
         if language is not None:

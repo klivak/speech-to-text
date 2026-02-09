@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 
 from src.core.local_transcriber import LocalTranscriber
 
@@ -39,10 +38,12 @@ class TestLocalTranscriber:
         lt._loading = False
         lt._load_error = None
 
-        with patch.dict("sys.modules", {"whisper": None}):
+        with (
+            patch.dict("sys.modules", {"whisper": None}),
+            patch("builtins.__import__", side_effect=ImportError),
+        ):
             # Якщо whisper не встановлено -- ImportError
-            with patch("builtins.__import__", side_effect=ImportError):
-                assert not lt.is_available()
+            assert not lt.is_available()
 
     def test_get_info(self) -> None:
         """Отримання інформації про транскрайбер."""

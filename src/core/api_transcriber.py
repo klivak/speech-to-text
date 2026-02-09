@@ -124,7 +124,7 @@ class APITranscriber(BaseTranscriber):
         buffer = io.BytesIO()
 
         # Конвертуємо float32 [-1.0, 1.0] в int16
-        audio_int16 = (audio * 32767).astype(np.int16)
+        audio_int16: np.ndarray = (audio * 32767).astype(np.int16)
 
         with wave.open(buffer, "wb") as wav_file:
             wav_file.setnchannels(1)

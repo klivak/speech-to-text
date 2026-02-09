@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import logging
 import urllib.request
-from typing import Optional
 
 from src.constants import APP_VERSION
 
@@ -15,7 +14,7 @@ GITHUB_REPO = "your-username/voicetype"
 RELEASES_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 
 
-def check_for_updates() -> Optional[dict[str, str]]:
+def check_for_updates() -> dict[str, str] | None:
     """Перевіряє наявність нової версії на GitHub.
 
     Повертає dict з інформацією про оновлення або None.

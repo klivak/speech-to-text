@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from typing import Any
 
 import numpy as np
 
@@ -25,7 +26,7 @@ class LocalTranscriber(BaseTranscriber):
         fp16: bool = False,
     ) -> None:
         self._model_name = model_name
-        self._model: object | None = None
+        self._model: Any = None
         self._current_device: str | None = None
         self._fp16 = fp16
         self._lock = threading.Lock()
@@ -123,7 +124,7 @@ class LocalTranscriber(BaseTranscriber):
 
             try:
                 # Whisper очікує float32 numpy масив
-                audio_float = audio.astype(np.float32)
+                audio_float: np.ndarray = audio.astype(np.float32)
 
                 result = self._model.transcribe(
                     audio_float,
