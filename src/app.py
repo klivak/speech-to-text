@@ -293,6 +293,15 @@ class EchoScribeApp(QObject):
     @pyqtSlot(object)
     def _on_recording_finished(self, audio_data: np.ndarray) -> None:
         """Обробляє записане аудіо -- запускає розпізнавання."""
+        from src.constants import SAMPLE_RATE
+
+        duration = len(audio_data) / SAMPLE_RATE
+        if duration < 1.0:
+            logger.info("Запис занадто короткий (%.1f сек), пропускаємо.", duration)
+            if self._overlay:
+                self._overlay.hide_overlay()
+            return
+
         if self._overlay:
             self._overlay.show_processing()
 
@@ -328,6 +337,27 @@ class EchoScribeApp(QObject):
         except Exception as e:
             self._transcription_error.emit(str(e))
 
+    # Типові галюцинації Whisper при тиші або фоновому шумі
+    _HALLUCINATION_PATTERNS = {
+        "дякую",
+        "дякую за перегляд",
+        "дякую за увагу",
+        "thank you",
+        "thank you for watching",
+        "thanks for watching",
+        "thank you for listening",
+        "you",
+        "bye",
+        "субтитри зроблені",
+        "субтитри",
+        "subtitles by",
+        ".",
+        "..",
+        "...",
+        "!",
+        "?",
+    }
+
     @pyqtSlot(object)
     def _on_transcription_done(self, result: TranscriptionResult) -> None:
         """Обробляє результат розпізнавання (виконується в головному потоці)."""
@@ -336,6 +366,14 @@ class EchoScribeApp(QObject):
             self._sounds.play_error()
             if self._overlay:
                 self._overlay.show_error("Текст не розпiзнано")
+            return
+
+        # Фільтр галюцинацій Whisper
+        text_lower = result.text.strip().lower().rstrip(".!?")
+        if text_lower in self._HALLUCINATION_PATTERNS or len(text_lower) < 2:
+            logger.info("Вiдфiльтровано галюцинацiю Whisper: '%s'", result.text)
+            if self._overlay:
+                self._overlay.hide_overlay()
             return
 
         # Постобробка тексту
