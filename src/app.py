@@ -291,7 +291,19 @@ class VoiceTypeApp(QObject):
             dictionary=self._dictionary.dictionary,
         )
 
+        # Копіюємо в буфер обміну якщо увімкнено
+        copy_to_clip = self._config.get("text_processing.copy_to_clipboard", True)
+        if copy_to_clip:
+            try:
+                import pyperclip
+
+                pyperclip.copy(processed)
+                logger.info("Текст скопійовано в буфер: %s", processed[:80])
+            except Exception as e:
+                logger.warning("Не вдалось скопіювати в буфер: %s", e)
+
         # Вставка тексту
+        logger.info("Вставка тексту: %s", processed[:80])
         success = paste_text(processed)
 
         if success:
@@ -299,7 +311,7 @@ class VoiceTypeApp(QObject):
             if self._overlay:
                 self._overlay.show_success(processed)
 
-            # Зберігаємо в історію (оригінальний текст)
+            # Зберігаємо в історію
             result.text = processed
             self._history.add(result)
         else:

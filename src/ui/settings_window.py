@@ -406,10 +406,12 @@ class SettingsWindow(QDialog):
         self._voice_commands_check = QCheckBox("Голосовi команди пунктуацiї")
         self._auto_capitalize_check = QCheckBox("Авто-капiталiзацiя")
         self._auto_period_check = QCheckBox("Авто-крапка в кiнцi")
+        self._copy_clipboard_check = QCheckBox("Копiювати розпiзнаний текст в буфер обмiну")
 
         layout.addWidget(self._voice_commands_check)
         layout.addWidget(self._auto_capitalize_check)
         layout.addWidget(self._auto_period_check)
+        layout.addWidget(self._copy_clipboard_check)
 
         # Таблиця команд пунктуації
         layout.addWidget(QLabel("Голосовi команди:"))
@@ -592,6 +594,7 @@ class SettingsWindow(QDialog):
         self._voice_commands_check.setChecked(text.get("voice_commands_enabled", True))
         self._auto_capitalize_check.setChecked(text.get("auto_capitalize", True))
         self._auto_period_check.setChecked(text.get("auto_period", True))
+        self._copy_clipboard_check.setChecked(text.get("copy_to_clipboard", True))
 
     def _save_settings(self) -> None:
         """Зберігає налаштування та закриває вікно."""
@@ -632,6 +635,7 @@ class SettingsWindow(QDialog):
                 "voice_commands_enabled": self._voice_commands_check.isChecked(),
                 "auto_capitalize": self._auto_capitalize_check.isChecked(),
                 "auto_period": self._auto_period_check.isChecked(),
+                "copy_to_clipboard": self._copy_clipboard_check.isChecked(),
             },
             "app": {
                 "autostart": self._autostart_check.isChecked(),

@@ -171,6 +171,8 @@ Settings are stored in `config.json` (auto-generated). Key settings:
 
 **API key is stored separately** in Windows Credential Manager, never in config files.
 
+**Whisper models cache**: `%USERPROFILE%\.cache\whisper\` (e.g. `C:\Users\<user>\.cache\whisper\`). You can safely delete unused model files (`.pt`) from this directory to free disk space.
+
 ## Security
 
 - API keys are stored in **Windows Credential Manager** (OS-level encryption)

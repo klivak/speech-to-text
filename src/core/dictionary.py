@@ -24,12 +24,30 @@ class DictionaryManager:
         self._load()
 
     def _load(self) -> None:
-        """Завантажує словник з файлу або створює дефолтний."""
+        """Завантажує словник з файлу або створює дефолтний.
+
+        Нові записи з DEFAULT_DICTIONARY автоматично додаються до існуючого
+        словника (без перезапису користувацьких змін).
+        """
         if self._path.exists():
             try:
                 with open(self._path, encoding="utf-8") as f:
                     self._dictionary = json.load(f)
-                logger.info("Словник завантажено: %d записів.", len(self._dictionary))
+                # Додаємо нові записи з дефолтного словника (без перезапису існуючих)
+                added = 0
+                for key, value in DEFAULT_DICTIONARY.items():
+                    if key not in self._dictionary:
+                        self._dictionary[key] = value
+                        added += 1
+                if added:
+                    self._save()
+                    logger.info(
+                        "Словник завантажено: %d записів (+%d нових з дефолтного).",
+                        len(self._dictionary),
+                        added,
+                    )
+                else:
+                    logger.info("Словник завантажено: %d записів.", len(self._dictionary))
             except (json.JSONDecodeError, OSError) as e:
                 logger.warning("Помилка читання словника: %s. Використовуємо дефолтний.", e)
                 self._dictionary = dict(DEFAULT_DICTIONARY)

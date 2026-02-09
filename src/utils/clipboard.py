@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import ctypes
 import logging
 import time
 
-import pyautogui
+import keyboard
 import pyperclip
 
 logger = logging.getLogger(__name__)
@@ -32,14 +33,24 @@ def paste_text(text: str) -> bool:
         # Копіюємо новий текст в буфер
         pyperclip.copy(text)
 
-        # Невелика пауза для надійності
+        # Чекаємо щоб гарячі клавіші були відпущені
+        for key in ("ctrl", "shift", "alt"):
+            try:
+                if keyboard.is_pressed(key):
+                    start = time.time()
+                    while keyboard.is_pressed(key) and (time.time() - start) < 1.0:
+                        time.sleep(0.02)
+            except Exception:
+                pass
+
+        # Пауза для надійності
         time.sleep(0.05)
 
-        # Вставляємо через Ctrl+V
-        pyautogui.hotkey("ctrl", "v")
+        # Вставляємо через Ctrl+V використовуючи Win32 API
+        _send_ctrl_v()
 
         # Пауза перед відновленням буфера
-        time.sleep(0.1)
+        time.sleep(0.2)
 
         # Відновлюємо попередній вміст буфера
         try:
@@ -47,9 +58,23 @@ def paste_text(text: str) -> bool:
         except Exception as e:
             logger.warning("Не вдалось відновити буфер обміну: %s", e)
 
-        logger.debug("Текст вставлено: %d символів.", len(text))
+        logger.info("Текст вставлено: %d символів.", len(text))
         return True
 
     except Exception as e:
         logger.error("Помилка вставки тексту: %s", e)
         return False
+
+
+def _send_ctrl_v() -> None:
+    """Емулює Ctrl+V через Win32 SendInput API."""
+    VK_CONTROL = 0x11
+    VK_V = 0x56
+    KEYEVENTF_KEYUP = 0x0002
+
+    user32 = ctypes.windll.user32
+    user32.keybd_event(VK_CONTROL, 0, 0, 0)
+    user32.keybd_event(VK_V, 0, 0, 0)
+    time.sleep(0.02)
+    user32.keybd_event(VK_V, 0, KEYEVENTF_KEYUP, 0)
+    user32.keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0)

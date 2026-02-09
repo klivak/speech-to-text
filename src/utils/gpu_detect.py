@@ -13,7 +13,7 @@ def is_cuda_available() -> bool:
         import torch
 
         return torch.cuda.is_available()
-    except ImportError:
+    except Exception:
         return False
 
 
@@ -24,7 +24,7 @@ def get_gpu_name() -> str | None:
 
         if torch.cuda.is_available():
             return torch.cuda.get_device_name(0)
-    except (ImportError, RuntimeError):
+    except Exception:
         pass
     return None
 
@@ -37,7 +37,7 @@ def get_gpu_vram_gb() -> float | None:
         if torch.cuda.is_available():
             props = torch.cuda.get_device_properties(0)
             return props.total_mem / (1024**3)
-    except (ImportError, RuntimeError):
+    except Exception:
         pass
     return None
 
@@ -69,7 +69,7 @@ def get_available_devices() -> list[dict[str, object]]:
                     "available": False,
                 }
             )
-    except ImportError:
+    except Exception:
         devices.append(
             {
                 "id": "cuda",
