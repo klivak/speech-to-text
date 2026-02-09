@@ -83,7 +83,19 @@ class EchoScribeApp(QObject):
         self._loading_timer.start()
         self._loading_shown = False
 
-        logger.info("EchoScribe ініціалізовано. Режим: %s", self._config.get("mode"))
+        # Перевіряємо наявність API ключа при старті
+        mode = self._config.get("mode")
+        if mode == MODE_API:
+            provider = self._config.get("api.provider", "openai")
+            if SecureKeyManager.is_configured(provider):
+                logger.info("API ключ (%s) знайдено. Готовий до роботи.", provider)
+            else:
+                logger.warning(
+                    "API ключ (%s) не знайдено! Додайте ключ в Налаштування > API.",
+                    provider,
+                )
+
+        logger.info("EchoScribe ініціалізовано. Режим: %s", mode)
 
     def _init_theme(self) -> None:
         """Ініціалізація теми оформлення."""
