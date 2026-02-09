@@ -183,7 +183,7 @@ class SettingsWindow(QDialog):
         key_layout.addWidget(self._api_key_input)
 
         self._show_key_btn = QPushButton("Показати")
-        self._show_key_btn.setFixedWidth(80)
+        self._show_key_btn.setFixedWidth(110)
         self._show_key_btn.clicked.connect(self._toggle_key_visibility)
         key_layout.addWidget(self._show_key_btn)
 
