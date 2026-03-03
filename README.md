@@ -6,6 +6,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)]()
 [![CI](https://github.com/klivak/speech-to-text/actions/workflows/ci.yml/badge.svg)](https://github.com/klivak/speech-to-text/actions)
+[![Security](https://github.com/klivak/speech-to-text/actions/workflows/security.yml/badge.svg)](https://github.com/klivak/speech-to-text/actions/workflows/security.yml)
+[![GitHub release](https://img.shields.io/github/v/release/klivak/speech-to-text?include_prereleases)](https://github.com/klivak/speech-to-text/releases)
+[![GitHub stars](https://img.shields.io/github/stars/klivak/speech-to-text)](https://github.com/klivak/speech-to-text/stargazers)
+[![GitHub last commit](https://img.shields.io/github/last-commit/klivak/speech-to-text)](https://github.com/klivak/speech-to-text/commits/main)
 
 > Hold a hotkey, speak, release -- text is instantly pasted into any application.
 
@@ -13,7 +17,8 @@
 
 ## Features
 
-- **Two recognition modes**: Local (offline, Whisper on your PC) and API (OpenAI cloud)
+- **Multi-provider API**: OpenAI, Groq (free), Deepgram -- choose speed/cost balance
+- **Two recognition modes**: Local (offline, Whisper on your PC) and API (cloud)
 - **Push-to-talk**: Hold hotkey to record, release to transcribe and paste
 - **Visual overlay**: Pulsating circle with amplitude visualization while recording
 - **System tray**: Quick access to settings, language and device switching
@@ -234,8 +239,8 @@ pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe --add-
 - [ ] Portable mode (all data in one folder)
 
 ### API Providers
-- [ ] Groq Whisper API -- free Whisper large-v3, very fast
-- [ ] Deepgram API -- $0.0043/min, 200 min/month free tier
+- [x] Groq Whisper API -- free Whisper large-v3, very fast
+- [x] Deepgram API -- $0.0043/min, 200 min/month free tier
 
 ### Integrations
 - [ ] VS Code extension

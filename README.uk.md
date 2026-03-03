@@ -6,6 +6,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)]()
 [![CI](https://github.com/klivak/speech-to-text/actions/workflows/ci.yml/badge.svg)](https://github.com/klivak/speech-to-text/actions)
+[![Security](https://github.com/klivak/speech-to-text/actions/workflows/security.yml/badge.svg)](https://github.com/klivak/speech-to-text/actions/workflows/security.yml)
+[![GitHub release](https://img.shields.io/github/v/release/klivak/speech-to-text?include_prereleases)](https://github.com/klivak/speech-to-text/releases)
+[![GitHub stars](https://img.shields.io/github/stars/klivak/speech-to-text)](https://github.com/klivak/speech-to-text/stargazers)
+[![GitHub last commit](https://img.shields.io/github/last-commit/klivak/speech-to-text)](https://github.com/klivak/speech-to-text/commits/main)
 
 > Тримай гарячу клавішу, говори, відпусти -- текст миттєво вставляється в будь-яку програму.
 
@@ -13,7 +17,8 @@
 
 ## Можливості
 
-- **Два режими розпізнавання**: Локальний (офлайн, Whisper на вашому ПК) та API (хмара OpenAI)
+- **Мульти-провайдер API**: OpenAI, Groq (безкоштовно), Deepgram -- вибір швидкості/ціни
+- **Два режими розпізнавання**: Локальний (офлайн, Whisper на вашому ПК) та API (хмара)
 - **Push-to-talk**: Тримайте гарячу клавішу для запису, відпустіть для розпізнавання
 - **Візуальний оверлей**: Пульсуюче коло з візуалізацією амплітуди під час запису
 - **Системний трей**: Швидкий доступ до налаштувань, зміни мови та пристрою

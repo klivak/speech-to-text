@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability, please report it responsibly:
 1. Do NOT open a public issue
-2. Email: [your-email] with details
+2. Use [GitHub Security Advisories](https://github.com/klivak/speech-to-text/security/advisories/new) to report privately
 3. We will respond within 48 hours
 
 ## API Key Safety

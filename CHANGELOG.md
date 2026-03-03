@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.4.0] - 2026-03-03
+
+### Added
+- Multi-provider API support: OpenAI, Groq (free Whisper large-v3), Deepgram
+- Update checker with About dialog and GitHub link
+- EchoScribe branded icon with pen and sound waves
+- Holographic loading overlay with dynamic animations
+- Sound packs (3 options: standard, minimal, sci-fi)
+- Smooth dynamic gradient animations in overlay
+- Whisper hallucination filter for cleaner transcription output
+- Recording timer with minimum 1-second threshold
+- Single instance mode: relaunch restarts existing process
+- Model status display in settings window
+- Default API mode with lazy model loading and RAM column in model table
+
+### Fixed
+- CUDA availability check and hotkey re-registration spam on settings save
+- Thread safety: use threading.Timer instead of QTimer for hotkey delay
+- Hotkey delay to prevent conflict with Ctrl+Shift+X combos
+- MyPy errors for Windows-specific modules (winsound, winreg, ctypes)
+- Widened UI buttons to prevent text cutoff
+- API key save/load verification in Credential Manager
+- Replaced fake test keys to avoid GitHub secret scanning alerts
+
+### Changed
+- API key availability now logged on startup
+
 ## [1.3.0] - 2026-02-09
 
 ### Changed
