@@ -20,7 +20,7 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --icon=assets/icon.ico --name=EchoScribe --add-data "assets;assets" src/main.py
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: dist/EchoScribe.exe
           generate_release_notes: true
