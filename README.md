@@ -1,5 +1,7 @@
 # EchoScribe
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/klivak)
+
 **Voice-to-text input for Windows powered by OpenAI Whisper**
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
@@ -262,3 +264,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 - [OpenAI Whisper](https://github.com/openai/whisper) -- speech recognition model
 - [PyQt6](https://www.riverbankcomputing.com/software/pyqt/) -- GUI framework
 - [sounddevice](https://python-sounddevice.readthedocs.io/) -- audio recording
+
+---
+
+☕ [Buy me a coffee](https://ko-fi.com/klivak) if this project helped you
